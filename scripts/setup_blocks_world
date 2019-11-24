@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
 Spawns dummy configuration for testing and moves arm to 'start' position
+
+inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
 """
 
 import argparse
@@ -100,7 +102,7 @@ def load_gazebo_models(num_blocks=3):
     # Spawn Table SDF
     rospy.wait_for_service('/gazebo/spawn_sdf_model')
     try:
-        table_pose=Pose(position=Point(x=1.0, y=0.0, z=0.0))
+        table_pose=Pose(position=Point(x=1., y=0.0, z=0.0))
         spawn_sdf = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
         resp_sdf = spawn_sdf("cafe_table", table_xml, "/",
                              table_pose, table_reference_frame)
@@ -118,7 +120,7 @@ def load_gazebo_models(num_blocks=3):
         rospy.logerr("Spawn URDF service call failed: {0}".format(e))
 
     # Spawn Blocks URDF
-    x_range = [0.65, 1.35]
+    x_range = [0.65, 1.] # might be outside baxter workspace
     y_range = [0.1, 0.35]
     yaw_range = [0,np.pi*2]
 
@@ -156,7 +158,7 @@ def delete_gazebo_models():
 
 def main():
     global num_blocks 
-    num_blocks = 12
+    num_blocks = 3 # reducing number for testing
 
     rospy.init_node("dummy_demo")
     # load models into world
