@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
-  <include file="$(find baxter_gazebo)/launch/baxter_world.launch" />  
+  <arg name="gui" default="true" />
+  <include file="$(find baxter_gazebo)/launch/baxter_world.launch" pass_all_args='true'/>  
   <node pkg="blocks" type="setup_blocks_world" name="setup_blocks_world"/>
 </launch>

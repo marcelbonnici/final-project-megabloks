@@ -173,14 +173,26 @@ def main():
     limb = 'left'
     hover_distance = 0.15 # meters
     # Starting Joint angles for left arm
-    starting_joint_angles = {'left_w0': 0.6699952259595108,
-                             'left_w1': 1.030009435085784,
-                             'left_w2': -0.4999997247485215,
-                             'left_e0': -1.189968899785275,
-                             'left_e1': 1.9400238130755056,
-                             'left_s0': -0.08000397926829805,
-                             'left_s1': -0.9999781166910306}
-    stp = setup(limb,hover_distance) 
+    starting_joint_angles_left = {'left_w0': 0.67,
+                                  'left_w1': 1.03,
+                                  'left_w2': -0.5,
+                                  'left_e0': -1.19,
+                                  'left_e1': 1.94,
+                                  'left_s0': -0.08,
+                                  'left_s1': -1.}
+    stp_left = setup(limb)
+
+    limb = 'right'
+    # Starting Joint angles for right arm
+    starting_joint_angles_right = {'right_w0': 0.67,
+                                   'right_w1': 1.03,
+                                   'right_w2': -0.05,
+                                   'right_e0': -1.19,
+                                   'right_e1': 1.94,
+                                   'right_s0': -0.08,
+                                   'right_s1': -1.}
+    stp_right = setup(limb)
+
     # Note that the models reference is the /world frame
     # An orientation for gripper fingers to be overhead and parallel to the obj
     overhead_orientation = Quaternion(
@@ -203,7 +215,7 @@ def main():
         orientation=overhead_orientation))
     
     # Move to the desired starting angles
-    stp.move_to_start(starting_joint_angles)
+    stp_left.move_to_start(starting_joint_angles)
 
     rospy.spin()
 

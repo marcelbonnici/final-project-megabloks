@@ -5,9 +5,13 @@ Notes:
 - to test `setup_blocks_world`, you can either run the launch file `baxter_gazebo_test.launch` or you can run the script directly from the terminal using `python setup_blocks_world`
 - you can retrieve the location of a model in gazebo using `rosservice call /gazebo/get_model_state "model_name: 'block1'"` 
 	- can also sub in any other model for `block`
-- to manually play with `moveit`
+- to manually play with `moveit` in simulation
 	- `roslaunch blocks baxter_gazebo_test.launch` to run baxter_gazebo, enable robot, set up dummy environment
 	- `rosrun baxter_interface joint_trajectory_action_server.py` to start joint trajectory server
 	- `roslaunch baxter_moveit_config baxter_grippers.launch`
 	- `python find_block` to to try running moveit from python -- work in progress
-
+- to play with `moveit` on the actual robot, don't run the launch file. instead
+	- run the node `setup_blocks_hw`
+	- `rosrun baxter_interface joint_trajectory_action_server.py` to start joint trajectory server
+	- `roslaunch baxter_moveit_config baxter_grippers.launch`
+	- `python find_block` to to try running moveit from python -- work in progress
