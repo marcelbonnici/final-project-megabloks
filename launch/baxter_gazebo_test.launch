@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <include file="$(find baxter_gazebo)/launch/baxter_world.launch" />  
+  <node pkg="blocks" type="setup_blocks_world" name="setup_blocks_world"/>
+</launch>

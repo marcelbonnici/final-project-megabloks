@@ -1,0 +1,32 @@
+<?xml version='1.0'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="base_plate">
+  <xacro:property name="body_l" value="0.34925"/>
+  <xacro:property name="body_w" value="0.41275"/>
+  <xacro:property name="body_h" value="0.0127"/>
+  
+  <link name="base_plate">
+    <inertial>
+      <origin xyz="${body_l/2} ${body_w/2} ${body_h/2}" />
+      <mass value="0.36" />
+      <inertia  ixx="0.5" ixy="0.0"  ixz="0.0"  iyy="0.5"  iyz="0.0"  izz="0.5" />
+    </inertial>
+    <visual>
+      <origin xyz="${body_l/2} ${body_w/2} ${body_h/2}" />
+      <geometry>
+        <box size="${body_l} ${body_w} ${body_h}" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="${body_l/2} ${body_w/2} ${body_h/2}" />
+      <geometry>
+        <box size="${body_l} ${body_w} ${body_h}" />
+      </geometry>
+    </collision>
+  </link>
+  
+  <gazebo reference="base_plate">
+     <material>Gazebo/Purple</material>
+     <mu1>1000</mu1>
+     <mu2>1000</mu2>
+  </gazebo>
+</robot>
