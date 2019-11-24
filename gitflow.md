@@ -1,4 +1,11 @@
 ## Gitflow
+We will all be working on our own feature branches. These branches will
+be pushed to our own public repositories in github. We will be merging the 
+changes from our feature branches into develop branches everday. We will
+be pushing our changes to develop everyday after we finish working. No one
+pushes directly into master. One of us will be merging changes from develop
+into master periodically when we hit milestones. Push as frequently as possible
+to develop to avoid long unhandled merge conflicts.
 
 ### Get develop at the start of the day
 `git checkout develop`
