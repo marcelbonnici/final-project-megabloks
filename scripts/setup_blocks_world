@@ -120,7 +120,7 @@ def load_gazebo_models(num_blocks=3):
         rospy.logerr("Spawn URDF service call failed: {0}".format(e))
 
     # Spawn Blocks URDF
-    x_range = [0.65, 1.] # might be outside baxter workspace
+    x_range = [0.65, 0.8] # might be outside baxter workspace
     y_range = [0.1, 0.35]
     yaw_range = [0,np.pi*2]
 

@@ -9,9 +9,13 @@ Notes:
 	- `roslaunch blocks baxter_gazebo_test.launch` to run baxter_gazebo, enable robot, set up dummy environment
 	- `rosrun baxter_interface joint_trajectory_action_server.py` to start joint trajectory server
 	- `roslaunch baxter_moveit_config baxter_grippers.launch`
-	- `python find_block` to to try running moveit from python -- work in progress
+	- `python find_block_manual` to to try running moveit from python -- goes through a random sequence of trajectories 
 - to play with `moveit` on the actual robot, don't run the launch file. instead
 	- run the node `setup_blocks_hw`
 	- `rosrun baxter_interface joint_trajectory_action_server.py` to start joint trajectory server
 	- `roslaunch baxter_moveit_config baxter_grippers.launch`
-	- `python find_block` to to try running moveit from python -- work in progress
+	- `python find_block_maual` to to try running moveit from python -- goes through a random sequence of trajectories
+- to view coordinate transforms in the command line: (might be different from RVIZ..need to explore more--maybe don't use this) 
+	- `rosrun tf tf_echo /l_gripper_l_finger_tip /base`
+	- command above is of the form tf_echo <source_frame> <target_frame> 
+- can view workspace in RVIZ by checking MotionPlanning > Planning Request > Show Workspace
