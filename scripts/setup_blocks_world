@@ -215,7 +215,8 @@ def main():
         orientation=overhead_orientation))
     
     # Move to the desired starting angles
-    stp_left.move_to_start(starting_joint_angles)
+    stp_left.move_to_start(starting_joint_angles_left)
+    stp_right.move_to_start(starting_joint_angles_right)
 
     rospy.spin()
 
