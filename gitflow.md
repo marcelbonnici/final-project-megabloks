@@ -5,7 +5,9 @@ changes from our feature branches into develop branches everday. We will
 be pushing our changes to develop everyday after we finish working. No one
 pushes directly into master. One of us will be merging changes from develop
 into master periodically when we hit milestones. Push as frequently as possible
-to develop to avoid long unhandled merge conflicts.
+to develop to avoid long unhandled merge conflicts. Develop and master
+branches should be pushed to the git repository owned by Matt. Our feature
+branches should be pushed to our own public github repository.
 
 ### Get develop at the start of the day
 `git checkout develop`
