@@ -14,9 +14,10 @@ def main():
     rospy.Rate(10)
     while not rospy.is_shutdown():
         jointcommand = JointCommand()
-        jointcommand.mode = JointCommand.TORQUE_MODE
-        jointcommand.command = [.1]
-        jointcommand.names = ['left_s0']
+        jointcommand.mode = JointCommand.POSITION_MODE
+        #JointCommand.VELOCITY_MODE
+        jointcommand.command = [-1.5, -0.20, 0.0, 1.7, 0.0]
+        jointcommand.names = ['left_s0', 'left_s1', 'left_e0', 'left_e1', 'left_w1']
         baxter_pub.publish(jointcommand)
 if __name__ == '__main__':
     main()
