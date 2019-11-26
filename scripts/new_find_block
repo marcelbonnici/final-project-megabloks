@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+"""
+Subscribes to gazebo service to get location of a block for testing
+"""
+
+import sys
+import copy
+import rospy
+import numpy as np
+
+# get block location
+from gazebo_msgs.srv import GetModelState
+
+# moveit
+import moveit_commander
+import moveit_msgs.msg
+import geometry_msgs.msg
+from std_msgs.msg import String
+from moveit_commander.conversions import pose_to_list
+
+import baxter_interface
+
+class find_block(object):
+    def __init__(self):
+        # set up gazebo service to find block
+        self.model_coords = rospy.ServiceProxy('/gazebo/get_model_state',GetModelState)
+
+        # initialize moveit commander
+        moveit_commander.roscpp_initialize(sys.argv)
+        robot = moveit_commander.RobotCommander()
+        scene = moveit_commander.PlanningSceneInterface()
+        group_name = 'left_arm'
+        group = moveit_commander.MoveGroupCommander(group_name)
+        display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
+                                               moveit_msgs.msg.DisplayTrajectory,
+                                               queue_size=20)
+
+        planning_frame = group.get_planning_frame()
+        print "============ Reference frame: %s" % planning_frame
+
+        # We can also print the name of the end-effector link for this group:
+        eef_link = group.get_end_effector_link()
+        print "============ End effector: %s" % eef_link
+
+        # We can get a list of all the groups in the robot:
+        group_names = robot.get_group_names()
+        print "============ Robot Groups:", robot.get_group_names()
+
+        # Sometimes for debugging it is useful to print the entire state of the
+        # robot:
+        print "============ Printing robot state"
+        print robot.get_current_state()
+        print ""
+
+        self.box_name = 'box'
+        self.robot = robot
+        self.scene = scene
+        self.group = group
+        # self.display_trajectory_publisher = display_trajectory_publisher
+        # self.planning_frame = planning_frame
+        self.eef_link = eef_link
+        self.group_names = group_names
+    def get_location(self,model):
+        self.object_coords = self.model_coords(model,'')
+        x_pos = self.object_coords.pose.position.x
+        y_pos = self.object_coords.pose.position.y
+        z_pos = self.object_coords.pose.position.z
+        return [x_pos, y_pos, z_pos]
+
+    def go_to_pose_goal(self,block):
+        group = self.group
+
+        goal = self.get_location(block)
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.orientation.w = 1.0
+        pose_goal.position.x = goal[0]
+        pose_goal.position.y = goal[1]
+        pose_goal.position.z = goal[2]
+        group.set_pose_target(pose_goal)
+
+        group.set_pose_target(pose_goal)
+
+        plan = group.go(wait=True)
+        group.stop()
+        group.clear_pose_targets()
+        # current_pose = self.group.get_current_pose().pose
+
+    def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
+        box_name = self.box_name
+        scene = self.scene
+        start = rospy.get_time()
+        seconds = rospy.get_time()
+        while (seconds - start < timeout) and not rospy.is_shutdown():
+          attached_objects = scene.get_attached_objects([box_name])
+          is_attached = len(attached_objects.keys()) > 0
+          is_known = box_name in scene.get_known_object_names()
+          if (box_is_attached == is_attached) and (box_is_known == is_known):
+            return True
+          rospy.sleep(0.1)
+          seconds = rospy.get_time()
+        return False
+
+    def add_box(self, timeout=4):
+        box_name = self.box_name
+        scene = self.scene
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = "l_gripper_l_finger_tip"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.z = 0.07 # slightly above the end effector
+        box_name = "box"
+        scene.add_box(box_name, box_pose, size=(0.3, 0.3, 0.3))
+        self.box_name=box_name
+        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
+
+    def attach_box(self, timeout=4):
+        box_name = self.box_name
+        robot = self.robot
+        scene = self.scene
+        eef_link = self.eef_link
+        group_names = self.group_names
+
+        grasping_group = 'left_hand'
+        touch_links = robot.get_link_names(group=grasping_group)
+        scene.attach_box(eef_link, box_name, touch_links=touch_links)
+        return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
+
+    def main(self):
+        rospy.init_node('find_block',anonymous=True)
+        self. go_to_pose_goal('block1')
+        self. go_to_pose_goal('block2')
+        # self.add_box()
+        # self.attach_box()
+        rospy.spin()
+
+
+if __name__ == '__main__':
+    try:
+        block_loc = find_block()
+        block_loc.main()
+    except rospy.ROSInterruptException:
+        pass
