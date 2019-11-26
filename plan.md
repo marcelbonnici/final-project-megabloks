@@ -21,24 +21,38 @@ High level Plan (High level Milstones):-
 
 
 Task deliverables for Milestone-1 (21/11 to 25/11):-
-1. [] Senthil - Get communication with camera up and 
-      running and come up with a very clear comuter
+1. [x] Senthil - Get communication with camera up and 
+      running and come up with a very clear computer
       vision plan for the system. Explore all
       baxter camera apis avaible in baxters.       
-2. [] Marcel -  Read up on force control, 
+2. [x] Marcel -  Read up on force control, 
       find out topics in RoS for force controls, 
       check these on real baxter gripping and
       pushing blocks. The robot should be able to
       pick up and grip megablocks from hardcoded 
       locations by the end of this milestone      
-3. [] Luxi -  Read up on trajectory generation, 
+3. [x] Luxi -  Read up on trajectory generation, 
       Show the robot following a hardcoded 
       trajectory.                                           
-4. [] Allie - Setup the simulation world in gazebo
+4. [x] Allie - Setup the simulation world in gazebo
       Check on collision properties and how it
       affects the grippers. Setup up small scripts
       automating redundant tasks 
-5. [] All - Go through all of baxter turtorials
+5. [x] All - Go through all of baxter turtorials
+
+
+Task deliverables for Milestone-1 (26/11 to 29/11):-
+1. [] Allie and Luxi - Write node / nodes for trajectory planning and execution
+2. [] Marcel - Write a node for gripper control and pushing down blocks 
+               for clippping against blocks
+3. [] Senthil - Write a node for computer vision. The camera should be both
+                intrinsically and extrinsically calibrated and blocks should
+                be detected and the location and orientation (x,y, theta) of
+                the block should be given out by the node
+4. [] All - Integrate all code and get a simple version of the whole project
+            running.
+
+
 
 Template:-
 1. []                                              -        - 
