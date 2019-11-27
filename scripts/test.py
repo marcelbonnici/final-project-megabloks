@@ -146,7 +146,7 @@ def main():
 
 
     print "============ Press `Enter` to add a box to the planning scene ..."
-    raw_input()
+    # raw_input()
     tutorial.attach_box()
 
 

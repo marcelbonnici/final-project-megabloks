@@ -24,7 +24,9 @@ class find_block(object):
     def __init__(self):
         # set up gazebo service to find block
         self.model_coords = rospy.ServiceProxy('/gazebo/get_model_state',GetModelState)
+        joint_state_topic = ['joint_states:=/robot/joint_states']
 
+        moveit_commander.roscpp_initialize(joint_state_topic)
         # initialize moveit commander
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
@@ -83,7 +85,25 @@ class find_block(object):
         plan = group.go(wait=True)
         group.stop()
         group.clear_pose_targets()
-        # current_pose = self.group.get_current_pose().pose
+
+    def go_to_pose_goal_1(self,position,orientation):
+        group = self.group
+
+        # goal = self.get_location(block)
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.orientation.x = orientation[0]
+        pose_goal.orientation.y = orientation[1]
+        pose_goal.orientation.z = orientation[2]
+        pose_goal.orientation.w = orientation[3]
+        pose_goal.position.x = position[0]
+        pose_goal.position.y = position[1]
+        pose_goal.position.z = position[2]
+        group.set_pose_target(pose_goal)
+
+        plan = group.go(wait=True)
+        group.stop()
+        group.clear_pose_targets()
+        # current_pose = group.get_current_pose().pose
 
     def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
         box_name = self.box_name
@@ -138,6 +158,33 @@ class find_block(object):
         scene.remove_world_object(box_name)
         return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
+
+
+    def plan_cartesian_path(self, scale=1):
+        group = self.group
+        waypoints = []
+
+        wpose = group.get_current_pose().pose
+        wpose.position.z -= scale * 0.1  # First move up (z)
+        # wpose.position.y += scale * 0.2  # and sideways (y)
+        waypoints.append(copy.deepcopy(wpose))
+
+        # wpose.position.x += scale * 0.1  # Second move forward/backwards in (x)
+        # waypoints.append(copy.deepcopy(wpose))
+
+        # wpose.position.y -= scale * 0.1  # Third move sideways (y)
+        # waypoints.append(copy.deepcopy(wpose))
+
+        (plan, fraction) = group.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+
+        return plan, fraction
+    def execute_plan(self, plan):
+        group = self.group
+        group.execute(plan, wait=True)
+
     def main(self):
         rospy.init_node('find_block',anonymous=True)
         raw_input()
@@ -145,8 +192,19 @@ class find_block(object):
         raw_input()
         self.attach_box()
         raw_input()
-        self. go_to_pose_goal('block1')
-        self. go_to_pose_goal('block2')
+        position1 = [0.7062,0.49816,0.186]
+        orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
+        # position2 = [0.73076,0.45317,0.15274]
+        print "============ Press `Enter` to go to pose goal ..."
+        self.go_to_pose_goal_1(position1,orientation_1)
+        print "============ Press `Enter` to go to cartesian_plan ..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path(scale=-1)
+        self.execute_plan(cartesian_plan)
+
+        # self.go_to_pose_goal_1(position2)
+        # self. go_to_pose_goal('block1')
+        # self. go_to_pose_goal('block2')
         print "============ Press `Enter` to detach the box from the Panda robot ..."
         raw_input()
         self.detach_box()
