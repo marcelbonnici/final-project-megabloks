@@ -108,30 +108,54 @@ class find_block(object):
         box_pose.pose.orientation.w = 1.0
         box_pose.pose.position.z = 0.07 # slightly above the end effector
         box_name = "box"
-        scene.add_box(box_name, box_pose, size=(0.3, 0.3, 0.3))
+        scene.add_box(box_name, box_pose, size=(0.1, 0.1, 0.1))
         self.box_name=box_name
         return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
-    # def attach_box(self, timeout=4):
-    #     box_name = self.box_name
-    #     robot = self.robot
-    #     scene = self.scene
-    #     eef_link = self.eef_link
-    #     group_names = self.group_names
-    #
-    #     grasping_group = 'left_hand'
-    #     touch_links = robot.get_link_names(group=grasping_group)
-    #     scene.attach_box(eef_link, box_name, touch_links=touch_links)
-    #     return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
+    def attach_box(self, timeout=4):
+        box_name = self.box_name
+        robot = self.robot
+        scene = self.scene
+        eef_link = self.eef_link
+        group_names = self.group_names
+
+        grasping_group = 'left_hand'
+        touch_links = robot.get_link_names(group=grasping_group)
+        scene.attach_box(eef_link, box_name, touch_links=touch_links)
+        return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
+
+
+    def detach_box(self, timeout=4):
+        box_name = self.box_name
+        scene = self.scene
+        eef_link = self.eef_link
+        scene.remove_attached_object(eef_link, name=box_name)
+        return self.wait_for_state_update(box_is_known=True, box_is_attached=False, timeout=timeout)
+
+    def remove_box(self, timeout=4):
+        box_name = self.box_name
+        scene = self.scene
+        scene.remove_world_object(box_name)
+        return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
     def main(self):
         rospy.init_node('find_block',anonymous=True)
+        raw_input()
+        self.add_box()
+        raw_input()
+        self.attach_box()
+        raw_input()
         self. go_to_pose_goal('block1')
         self. go_to_pose_goal('block2')
-        # raw_input()
-        self.add_box()
-        # self.attach_box()
-        rospy.spin()
+        print "============ Press `Enter` to detach the box from the Panda robot ..."
+        raw_input()
+        self.detach_box()
+        print "============ Press `Enter` to remove the box from the planning scene ..."
+        raw_input()
+        self.remove_box()
+
+
+        # rospy.spin()
 
 
 if __name__ == '__main__':

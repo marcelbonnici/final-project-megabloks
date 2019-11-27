@@ -125,6 +125,20 @@ class MoveGroupPythonIntefaceTutorial(object):
     self.box_name=box_name
     return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
+  def attach_box(self, timeout=4):
+    box_name = self.box_name
+    robot = self.robot
+    scene = self.scene
+    eef_link = self.eef_link
+    group_names = self.group_names
+
+    grasping_group = 'left_hand'
+    touch_links = robot.get_link_names(group=grasping_group)
+    scene.attach_box(eef_link, box_name, touch_links=touch_links)
+    return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
+
+
+
 def main():
   try:
 
@@ -132,8 +146,9 @@ def main():
 
 
     print "============ Press `Enter` to add a box to the planning scene ..."
-    # raw_input()
-    tutorial.add_box()
+    raw_input()
+    tutorial.attach_box()
+
 
 
     print "============ Python tutorial demo complete!"
