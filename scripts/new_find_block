@@ -112,23 +112,24 @@ class find_block(object):
         self.box_name=box_name
         return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
-    def attach_box(self, timeout=4):
-        box_name = self.box_name
-        robot = self.robot
-        scene = self.scene
-        eef_link = self.eef_link
-        group_names = self.group_names
-
-        grasping_group = 'left_hand'
-        touch_links = robot.get_link_names(group=grasping_group)
-        scene.attach_box(eef_link, box_name, touch_links=touch_links)
-        return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
+    # def attach_box(self, timeout=4):
+    #     box_name = self.box_name
+    #     robot = self.robot
+    #     scene = self.scene
+    #     eef_link = self.eef_link
+    #     group_names = self.group_names
+    #
+    #     grasping_group = 'left_hand'
+    #     touch_links = robot.get_link_names(group=grasping_group)
+    #     scene.attach_box(eef_link, box_name, touch_links=touch_links)
+    #     return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
 
     def main(self):
         rospy.init_node('find_block',anonymous=True)
         self. go_to_pose_goal('block1')
         self. go_to_pose_goal('block2')
-        # self.add_box()
+        # raw_input()
+        self.add_box()
         # self.attach_box()
         rospy.spin()
 
