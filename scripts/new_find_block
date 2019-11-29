@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Subscribes to gazebo service to get location of a block for testing
+This node is simulate robot go to BLOCKS
 """
 
 import sys
@@ -126,9 +126,10 @@ class find_block(object):
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = "l_gripper_l_finger_tip"
         box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.z = 0.07 # slightly above the end effector
+        box_pose.pose.position.z = 0.05 # slightly above the end effector
+        box_pose.pose.position.y = -0.025
         box_name = "box"
-        scene.add_box(box_name, box_pose, size=(0.1, 0.1, 0.1))
+        scene.add_box(box_name, box_pose, size=(0.05, 0.05, 0.05))
         self.box_name=box_name
         return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
@@ -159,16 +160,18 @@ class find_block(object):
         return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
 
-
-    def plan_cartesian_path(self, scale=1):
+    # plan _1 go -z direction
+    def plan_cartesian_path_1(self, scale=1):
         group = self.group
         waypoints = []
 
         wpose = group.get_current_pose().pose
-        wpose.position.z -= scale * 0.1  # First move up (z)
+        wpose.position.z += scale * 0.1  # First move down (z)
         # wpose.position.y += scale * 0.2  # and sideways (y)
         waypoints.append(copy.deepcopy(wpose))
 
+        # wpose.position.y += scale * 0.1
+        # waypoints.append(copy.deepcopy(wpose))
         # wpose.position.x += scale * 0.1  # Second move forward/backwards in (x)
         # waypoints.append(copy.deepcopy(wpose))
 
@@ -179,37 +182,76 @@ class find_block(object):
                                            waypoints,   # waypoints to follow
                                            0.01,        # eef_step
                                            0.0)         # jump_threshold
-
         return plan, fraction
+
+    # plan_2 go +z direction
+    def plan_cartesian_path_2(self, scale=1):
+        group = self.group
+        waypoints = []
+
+        wpose = group.get_current_pose().pose
+        wpose.position.z -= scale * 0.1  # First move up (z)
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
+
+    # plan_3 go to horizontal direction
+    def plan_cartesian_path_3(self, scale=1):
+        group = self.group
+        waypoints = []
+
+        wpose = group.get_current_pose().pose
+        wpose.position.y -= scale * 0.3  # move towards right
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
+
+
     def execute_plan(self, plan):
         group = self.group
         group.execute(plan, wait=True)
 
     def main(self):
         rospy.init_node('find_block',anonymous=True)
-        raw_input()
-        self.add_box()
-        raw_input()
-        self.attach_box()
+        print "============ Press `Enter` to go to box position ..."
         raw_input()
         position1 = [0.7062,0.49816,0.186]
         orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
-        # position2 = [0.73076,0.45317,0.15274]
-        print "============ Press `Enter` to go to pose goal ..."
         self.go_to_pose_goal_1(position1,orientation_1)
-        print "============ Press `Enter` to go to cartesian_plan ..."
+        print "============ Press `Enter` to go down ..."
         raw_input()
-        cartesian_plan, fraction = self.plan_cartesian_path(scale=-1)
+        cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
+        self.execute_plan(cartesian_plan)
+        print "============ Press `Enter` to go to add_box ..."
+        raw_input()
+        self.add_box()
+        self.attach_box()
+        print "============ Press `Enter` to go up ..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
 
+        print "============ Press `Enter` to go horizontal tarward the position to drop box..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_3(scale=-1)
+        self.execute_plan(cartesian_plan)
+
+        print "============ Press `Enter` to go vertical ..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
+        self.execute_plan(cartesian_plan)
         # self.go_to_pose_goal_1(position2)
         # self. go_to_pose_goal('block1')
         # self. go_to_pose_goal('block2')
         print "============ Press `Enter` to detach the box from the Panda robot ..."
         raw_input()
         self.detach_box()
-        print "============ Press `Enter` to remove the box from the planning scene ..."
-        raw_input()
         self.remove_box()
 
 
