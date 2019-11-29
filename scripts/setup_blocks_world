@@ -33,9 +33,8 @@ from std_msgs.msg import (
 import baxter_interface
 
 class setup(object):
-    def __init__(self, limb, hover_distance = 0.15, verbose=True):
+    def __init__(self, limb, verbose=True):
         self._limb_name = limb # string
-        self._hover_distance = hover_distance # in meters
         self._verbose = verbose # bool
         self._limb = baxter_interface.Limb(limb)
         self._gripper = baxter_interface.Gripper(limb)
@@ -77,10 +76,10 @@ def load_gazebo_models(num_blocks=3):
     # Get Models' Path
     model_path = rospkg.RosPack().get_path('blocks')+"/models/"
 
-    # Load Table SDF
+    # Load Folding Table URDF
     table_xml = ''
-    with open (model_path + "cafe_table/model.sdf", "r") as table_file:
-        table_xml=table_file.read().replace('\n', '')
+    with open (model_path + "folding_table/folding_table.urdf", "r") as baseplate_file:
+        table_xml=baseplate_file.read().replace('\n', '')
 
     # Load Base Plate URDF
     baseplate_xml = ''
@@ -98,21 +97,20 @@ def load_gazebo_models(num_blocks=3):
     with open (model_path + "block/model_blue.urdf", "r") as block_file:
         block_green_xml=block_file.read().replace('\n', '')
     blocks = [block_red_xml, block_blue_xml, block_green_xml]
-    
-    # Spawn Table SDF
-    rospy.wait_for_service('/gazebo/spawn_sdf_model')
-    try:
-        table_pose=Pose(position=Point(x=1., y=0.0, z=0.0))
-        spawn_sdf = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
-        resp_sdf = spawn_sdf("cafe_table", table_xml, "/",
-                             table_pose, table_reference_frame)
-    except rospy.ServiceException, e:
-        rospy.logerr("Spawn SDF service call failed: {0}".format(e))
-    
-    # Spawn Base Plate URDF
+   
+    # Spawn Folding Table URDF
     rospy.wait_for_service('/gazebo/spawn_urdf_model')
     try:
-        base_plate_pose=Pose(position=Point(x=0.8, y=-0.4, z=0.7825))
+        table_pose=Pose(position=Point(x=0.65, y=-0.2, z=0.))
+        spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+        resp_urdf = spawn_urdf("folding_table", table_xml, "/",
+                                table_pose, table_reference_frame)
+    except rospy.ServiceException, e:
+        rospy.logerr("Spawn URDF service call failed: {0}".format(e))
+
+    # Spawn Base Plate URDF
+    try:
+        base_plate_pose=Pose(position=Point(x=0.65, y=-0.2, z=0.67))
         spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
         resp_urdf = spawn_urdf("base_plate", base_plate_xml, "/",
                                 base_plate_pose, block_reference_frame)
@@ -120,8 +118,8 @@ def load_gazebo_models(num_blocks=3):
         rospy.logerr("Spawn URDF service call failed: {0}".format(e))
 
     # Spawn Blocks URDF
-    x_range = [0.65, 0.8] # might be outside baxter workspace
-    y_range = [0.1, 0.35]
+    x_range = [0.70, 1.] 
+    y_range = [-0.17, 0.]
     yaw_range = [0,np.pi*2]
 
     x_options = np.arange(x_range[0],x_range[1],0.1)
@@ -136,7 +134,7 @@ def load_gazebo_models(num_blocks=3):
             angle_pos = np.random.choice(np.arange(yaw_range[0],yaw_range[1],np.pi/2))
             angle_quat = angle_trans(0,0,angle_pos)
             angle = Quaternion(x = angle_quat[0], y = angle_quat[1], z = angle_quat[2], w = angle_quat[3])
-            block_pose= Pose(position=Point(x=x_pos, y=y_pos, z=0.8),orientation=angle)
+            block_pose= Pose(position=Point(x=x_pos, y=y_pos, z=0.68),orientation=angle)
             resp_urdf = spawn_urdf("block{}".format(i), block_spawn, "/",
                                    block_pose, block_reference_frame)
         except rospy.ServiceException, e:
@@ -149,7 +147,7 @@ def delete_gazebo_models():
     # available since Gazebo has been killed, it is fine to error out
     try:
         delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-        resp_delete = delete_model("cafe_table")
+        resp_delete = delete_model("folding_table")
         resp_delete = delete_model("base_plate")
         for i in range(num_blocks):
             resp_delete = delete_model("block{}".format(i))
@@ -171,7 +169,6 @@ def main():
     rospy.wait_for_message("/robot/sim/started", Empty)
     
     limb = 'left'
-    hover_distance = 0.15 # meters
     # Starting Joint angles for left arm
     starting_joint_angles_left = {'left_w0': 0.67,
                                   'left_w1': 1.03,
@@ -215,7 +212,7 @@ def main():
         orientation=overhead_orientation))
     
     # Move to the desired starting angles
-    stp_left.move_to_start(starting_joint_angles_left)
+    #stp_left.move_to_start(starting_joint_angles_left)
     stp_right.move_to_start(starting_joint_angles_right)
 
     rospy.spin()
