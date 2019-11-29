@@ -1,14 +1,15 @@
 <?xml version='1.0'?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="block">
-  <xacro:property name="filename" value="$(find blocks)/models/block.yaml"/>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="folding_table">
+  <xacro:property name="filename" value="$(find blocks)/models/table.yaml"/>
   <xacro:property name="model" value="${load_yaml(filename)}"/>
 
   <xacro:property name="body_l" value="${model['length']}"/>
   <xacro:property name="body_w" value="${model['width']}"/>
   <xacro:property name="body_h" value="${model['height']}"/>
   
-  <xacro:property name="color" default="Green" />
-  <link name="${color}_block">
+  <xacro:property name="color" default="Wood" />
+  <!--Gazebo colors: http://wiki.ros.org/simulator_gazebo/Tutorials/ListOfMaterials -->
+  <link name="table">
     <inertial>
       <origin xyz="${body_l/2} ${body_w/2} ${body_h/2}" />
       <mass value="0.5" />
@@ -28,7 +29,7 @@
     </collision>
   </link>
   
-  <gazebo reference="${color}_block">
+  <gazebo reference="table">
      <material>Gazebo/${color}</material>
      <mu1>1000</mu1>
      <mu2>1000</mu2>
