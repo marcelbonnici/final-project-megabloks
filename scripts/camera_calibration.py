@@ -3,12 +3,16 @@
 import numpy as np
 import cv2
 import glob
+import yaml
+
+import json
+import os
 
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-rows = 8
-columns = 8
+rows = 9
+columns = 6
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 objp = np.zeros((rows * columns,3), np.float32)
@@ -18,7 +22,7 @@ objp[:,:2] = np.mgrid[0:rows,0:columns].T.reshape(-1,2)
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
-images = glob.glob('../handpicked_images/calibration/*.jpg')
+images = glob.glob('./calibration_images/selected_images/*.jpg')
 
 for fname in images:
     img = cv2.imread(fname)
@@ -42,15 +46,38 @@ for fname in images:
 
 cv2.destroyAllWindows()
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
+print(mtx)
 
-img = cv2.imread('/home/senthil/work/courses/quarter1/embedded_systems_in_robotics/practice_workspace/rethink_ws/src/final-project-megabloks/all_images/images/set1/left0001.jpg')
+img = cv2.imread(images[0])
 h,  w = img.shape[:2]
 newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
+camera_parameters = {}
+
+config_file_path = './config/camera_parameters.yaml' 
+is_file_exisis = os.path.isfile(config_file_path)
+
+if(is_file_exisis):
+  with open(config_file_path) as in_file:
+    camera_parameters = yaml.full_load(in_file)
+else:
+  camera_parameters = {}
+
+
+#camera_parameters += [{'broken_baxter':{'left_camera':{'distortion':dist.tolist(), 
+#                                                       'intrinsic':newcameramtx.tolist()}}}]
+camera_parameters['broken_baxter'] = {'left_camera':{'distortion': dist.tolist()}}
+camera_parameters['broken_baxter']['left_camera']['intrinsic']= newcameramtx.tolist()
+
+with open(config_file_path, 'w') as out_file:
+    documents = yaml.dump(camera_parameters, out_file)
+
+
 
 # undistort
-dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
-
-# crop the image
-x,y,w,h = roi
-dst = dst[y:y+h, x:x+w]
-cv2.imwrite('calibresult.png',dst)
+# View results
+# dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
+# 
+# # crop the image
+# x,y,w,h = roi
+# dst = dst[y:y+h, x:x+w]
+# cv2.imwrite('calibresult.png',dst)
