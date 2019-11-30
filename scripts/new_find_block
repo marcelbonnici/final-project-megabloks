@@ -66,6 +66,11 @@ class find_block(object):
 
         # self._gripper = baxter_interface.Limb(group_name)
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
+        rospy.set_param('pick_position', [[0.682995011987,0.0361733278331, -0.287095162438],[-0.00868436126065,0.999768931835,0.00725217767718,0.0182776017772]])
+        self.pick_position = rospy.get_param("pick_position")
+
+        rospy.set_param('place_position', [[0.78020285436,0.138062951409,-0.28081543141],[-0.0803725789232,0.9946345256,0.0223882639222,0.0611651426862]])
+        self.place_position = rospy.get_param("place_position")
 
     def get_location(self,model):
         self.object_coords = self.model_coords(model,'')
@@ -207,9 +212,14 @@ class find_block(object):
     def plan_cartesian_path_3(self, scale=1):
         group = self.group
         waypoints = []
-
+        # get current state
         wpose = group.get_current_pose().pose
-        wpose.position.y -= scale * 0.3  # move towards right
+        # find the difference between current state and y_direction
+        y_distance = self.place_position[0][1]- wpose.position.y
+        # find the difference between current state and x_direction
+        x_distance = self.place_position[0][0]- wpose.position.x
+        wpose.position.y += scale * y_distance  # move towards right "-",
+        wpose.position.x += scale * x_distance
         waypoints.append(copy.deepcopy(wpose))
         (plan, fraction) = group.compute_cartesian_path(
                                            waypoints,   # waypoints to follow
@@ -217,6 +227,19 @@ class find_block(object):
                                            0.0)         # jump_threshold
         return plan, fraction
 
+    def plan_cartesian_path_4(self, scale=1):
+        group = self.group
+        waypoints = []
+
+        wpose = group.get_current_pose().pose
+        z_distance = self.place_position[0][2]- wpose.position.z
+        wpose.position.z -= scale * z_distance  # First move down (z)
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
 
     def execute_plan(self, plan):
         group = self.group
@@ -239,43 +262,50 @@ class find_block(object):
     def main(self):
         # p = PickAndPlace('left_arm',hover_distance = 0.15)
         # rospy.init_node('find_block',anonymous=True)
-        print "============ Press `Enter` to go to box position ..."
+        print "============ Press `Enter` to go above pick position ..."
         raw_input()
-        position1 = [0.7062,0.49816,0.186]
-        orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
-        self.go_to_pose_goal_1(position1,orientation_1)
+        # position1 = [0.7062,0.49816,0.186]
+        # orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
+        pick_position1 = self.pick_position[0]
+        pick_position1[2] = self.pick_position[0][2]+0.1
+        print pick_position1
+        pick_orientation_1 = self.pick_position[1]
+        print pick_orientation_1
+        self.go_to_pose_goal_1(pick_position1,pick_orientation_1)
+        # print "============ Press `Enter` to go at pick position ..."
+        # raw_input()
+        # position2 = self.pick_position[0]
+        # position2[2] = self.pick_position[0][2]-0.1
+        # print position2
+        # orientation_2 = self.pick_position[1]
+        # print orientation_2
+        # self.go_to_pose_goal_1(position2,orientation_2)
         print "============ Press `Enter` to go down ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
         self.execute_plan(cartesian_plan)
+        print "============ Press `Enter` to close gripper  ..."
+        raw_input()
+        self.gripper_close()
         print "============ Press `Enter` to go to add_box ..."
         raw_input()
         self.add_box()
         self.attach_box()
-        print "============ Press `Enter` to close gripper  ..."
-        raw_input()
-        self.gripper_close()
         print "============ Press `Enter` to go up ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
-
         print "============ Press `Enter` to go horizontal tarward the position to drop box..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(scale=-1)
         self.execute_plan(cartesian_plan)
-
         print "============ Press `Enter` to go vertical ..."
         raw_input()
-        cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
+        cartesian_plan, fraction = self.plan_cartesian_path_4(scale=-1)
         self.execute_plan(cartesian_plan)
         # self.go_to_pose_goal_1(position2)
         # self. go_to_pose_goal('block1')
         # self. go_to_pose_goal('block2')
-        print "============ Press `Enter` to detach the box from the Panda robot ..."
-        raw_input()
-        self.detach_box()
-        self.remove_box()
         print "============ Press `Enter` to open gripper  ..."
         raw_input()
         self.gripper_open()
