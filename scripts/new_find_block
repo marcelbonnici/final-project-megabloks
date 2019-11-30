@@ -7,6 +7,7 @@ import sys
 import copy
 import rospy
 import numpy as np
+# from test import *
 
 # get block location
 from gazebo_msgs.srv import GetModelState
@@ -25,7 +26,7 @@ class find_block(object):
         # set up gazebo service to find block
         self.model_coords = rospy.ServiceProxy('/gazebo/get_model_state',GetModelState)
         joint_state_topic = ['joint_states:=/robot/joint_states']
-
+        rospy.init_node('find_block',anonymous=True)
         moveit_commander.roscpp_initialize(joint_state_topic)
         # initialize moveit commander
         moveit_commander.roscpp_initialize(sys.argv)
@@ -62,6 +63,10 @@ class find_block(object):
         # self.planning_frame = planning_frame
         self.eef_link = eef_link
         self.group_names = group_names
+
+        # self._gripper = baxter_interface.Limb(group_name)
+        self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
+
     def get_location(self,model):
         self.object_coords = self.model_coords(model,'')
         x_pos = self.object_coords.pose.position.x
@@ -217,8 +222,23 @@ class find_block(object):
         group = self.group
         group.execute(plan, wait=True)
 
+    def gripper_close(self):
+        # self._gripper.reboot()
+        self._gripper.close()
+        # self._gripper.calibrate()
+        # self._gripper.close()
+        # rospy.sleep(1.0)
+
+    def gripper_open(self):
+        # self._gripper.reboot()
+        self._gripper.open()
+        # self._gripper.calibrate()
+        # self._gripper.open()
+        # rospy.sleep(1.0)
+
     def main(self):
-        rospy.init_node('find_block',anonymous=True)
+        # p = PickAndPlace('left_arm',hover_distance = 0.15)
+        # rospy.init_node('find_block',anonymous=True)
         print "============ Press `Enter` to go to box position ..."
         raw_input()
         position1 = [0.7062,0.49816,0.186]
@@ -232,6 +252,9 @@ class find_block(object):
         raw_input()
         self.add_box()
         self.attach_box()
+        print "============ Press `Enter` to close gripper  ..."
+        raw_input()
+        self.gripper_close()
         print "============ Press `Enter` to go up ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
@@ -253,7 +276,9 @@ class find_block(object):
         raw_input()
         self.detach_box()
         self.remove_box()
-
+        print "============ Press `Enter` to open gripper  ..."
+        raw_input()
+        self.gripper_open()
 
         # rospy.spin()
 
