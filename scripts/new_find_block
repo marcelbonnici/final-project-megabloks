@@ -79,22 +79,22 @@ class find_block(object):
         z_pos = self.object_coords.pose.position.z
         return [x_pos, y_pos, z_pos]
 
-    def go_to_pose_goal(self,block):
-        group = self.group
-
-        goal = self.get_location(block)
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.w = 1.0
-        pose_goal.position.x = goal[0]
-        pose_goal.position.y = goal[1]
-        pose_goal.position.z = goal[2]
-        group.set_pose_target(pose_goal)
-
-        group.set_pose_target(pose_goal)
-
-        plan = group.go(wait=True)
-        group.stop()
-        group.clear_pose_targets()
+    # def go_to_pose_goal(self,block):
+    #     group = self.group
+    #
+    #     goal = self.get_location(block)
+    #     pose_goal = geometry_msgs.msg.Pose()
+    #     pose_goal.orientation.w = 1.0
+    #     pose_goal.position.x = goal[0]
+    #     pose_goal.position.y = goal[1]
+    #     pose_goal.position.z = goal[2]
+    #     group.set_pose_target(pose_goal)
+    #
+    #     group.set_pose_target(pose_goal)
+    #
+    #     plan = group.go(wait=True)
+    #     group.stop()
+    #     group.clear_pose_targets()
 
     def go_to_pose_goal_1(self,position,orientation):
         group = self.group
@@ -218,8 +218,8 @@ class find_block(object):
         y_distance = self.place_position[0][1]- wpose.position.y
         # find the difference between current state and x_direction
         x_distance = self.place_position[0][0]- wpose.position.x
-        wpose.position.y += scale * y_distance  # move towards right "-",
-        wpose.position.x += scale * x_distance
+        wpose.position.y -= scale * y_distance  # move towards right "-",
+        wpose.position.x -= scale * x_distance
         waypoints.append(copy.deepcopy(wpose))
         (plan, fraction) = group.compute_cartesian_path(
                                            waypoints,   # waypoints to follow
@@ -259,11 +259,37 @@ class find_block(object):
         # self._gripper.open()
         # rospy.sleep(1.0)
 
+
+    def force_control(self,reset):
+        # self._gripper.calibrate(block=True)
+        current_force = self._gripper.parameters()['moving_force']
+        print("current force {}" .format(current_force))
+        offset = 40.0
+
+        if reset == 1:
+            a = 10.0
+            holdforce = 30.0
+        else:
+            a = current_force + offset
+            holdforce = 40.0
+
+        self._gripper.set_holding_force(holdforce)
+        self._gripper.set_moving_force(a)
+        current_force = self._gripper.parameters()['moving_force']
+        dead_zone = self._gripper.parameters()['dead_zone']
+        holding_force = self._gripper.parameters()['holding_force']
+
+        print("holding_force {}" .format(holding_force))
+        print("new_current force {}" .format(current_force))
+        print(" dead_zone {}" .format(dead_zone))
     def main(self):
         # p = PickAndPlace('left_arm',hover_distance = 0.15)
         # rospy.init_node('find_block',anonymous=True)
         print "============ Press `Enter` to go above pick position ..."
         raw_input()
+        self._gripper.calibrate(block=True)
+        self._gripper.set_dead_band(1.0)
+        self.force_control(1)
         # position1 = [0.7062,0.49816,0.186]
         # orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
         pick_position1 = self.pick_position[0]
@@ -287,10 +313,10 @@ class find_block(object):
         print "============ Press `Enter` to close gripper  ..."
         raw_input()
         self.gripper_close()
-        print "============ Press `Enter` to go to add_box ..."
-        raw_input()
-        self.add_box()
-        self.attach_box()
+        # print "============ Press `Enter` to go to add_box ..."
+        # raw_input()
+        # self.add_box()
+        # self.attach_box()
         print "============ Press `Enter` to go up ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
@@ -299,17 +325,37 @@ class find_block(object):
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to go vertical ..."
+        print "============ Press `Enter` to go vertical  and add force..."
         raw_input()
+        self.force_control(0)
         cartesian_plan, fraction = self.plan_cartesian_path_4(scale=-1)
         self.execute_plan(cartesian_plan)
         # self.go_to_pose_goal_1(position2)
         # self. go_to_pose_goal('block1')
         # self. go_to_pose_goal('block2')
-        print "============ Press `Enter` to open gripper  ..."
-        raw_input()
+        # print "============ Press `Enter` to open gripper  ..."
+        # raw_input()
+        self.force_control(1)
+        rospy.sleep(5)
         self.gripper_open()
+        print "============ Press `Enter` to go vertical  and add force..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
+        self.execute_plan(cartesian_plan)
+        print "============ Press `Enter` to close gripper  ..."
+        raw_input()
+        self.gripper_close()
+        self.force_control(0)
+        print "============ Press `Enter` to go down ..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
+        self.execute_plan(cartesian_plan)
+        rospy.sleep(5)
+        print "============  to go up ..."
 
+        cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
+        self.execute_plan(cartesian_plan)
+        self.force_control(1)
         # rospy.spin()
 
 
