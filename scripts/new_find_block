@@ -288,6 +288,7 @@ class find_block(object):
         # rospy.init_node('find_block',anonymous=True)
         print "============ Press `Enter` to go above pick position ..."
         raw_input()
+        self.gripper_open()
         #self._gripper.calibrate(block=True)
         self._gripper.set_dead_band(1.0)
         self.force_control(1)
