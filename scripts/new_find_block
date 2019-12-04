@@ -65,11 +65,12 @@ class find_block(object):
         self.group_names = group_names
 
         # self._gripper = baxter_interface.Limb(group_name)
+        table_offset = 0.08
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
-        rospy.set_param('pick_position', [[0.682995011987,0.0361733278331, -0.287095162438],[-0.00868436126065,0.999768931835,0.00725217767718,0.0182776017772]])
+        rospy.set_param('pick_position', [[0.682995011987,0.0361733278331, -0.287095162438+table_offset],[-0.00868436126065,0.999768931835,0.00725217767718,0.0182776017772]])
         self.pick_position = rospy.get_param("pick_position")
 
-        rospy.set_param('place_position', [[0.78020285436,0.138062951409,-0.28081543141],[-0.0803725789232,0.9946345256,0.0223882639222,0.0611651426862]])
+        rospy.set_param('place_position', [[0.78020285436,0.138062951409,-0.28081543141+table_offset],[-0.0803725789232,0.9946345256,0.0223882639222,0.0611651426862]])
         self.place_position = rospy.get_param("place_position")
 
     def get_location(self,model):
@@ -287,7 +288,7 @@ class find_block(object):
         # rospy.init_node('find_block',anonymous=True)
         print "============ Press `Enter` to go above pick position ..."
         raw_input()
-        self._gripper.calibrate(block=True)
+        #self._gripper.calibrate(block=True)
         self._gripper.set_dead_band(1.0)
         self.force_control(1)
         # position1 = [0.7062,0.49816,0.186]
@@ -321,7 +322,7 @@ class find_block(object):
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to go horizontal tarward the position to drop box..."
+        print "============ Press `Enter` to go horizontal torward the position to drop box..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(scale=-1)
         self.execute_plan(cartesian_plan)
