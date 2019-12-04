@@ -39,6 +39,8 @@ class setup(object):
         self._rs = baxter_interface.RobotEnable(baxter_interface.CHECK_VERSION)
         self._init_state = self._rs.state().enabled
         print("Enabling robot... ")
+        # calibrate gripper
+        self._gripper.calibrate(block=True)
         #self._rs.enable()
 
     def move_to_start(self, start_angles=None):
@@ -97,7 +99,7 @@ def main():
     # Move to the desired starting angles
     stp_left.move_to_start(starting_joint_angles_left)
     stp_right.move_to_start(starting_joint_angles_right)
-    rospy.spin()
+    #rospy.spin()
 
 if __name__ == '__main__':
     sys.exit(main())
