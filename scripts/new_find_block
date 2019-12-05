@@ -65,7 +65,7 @@ class find_block(object):
         self.group_names = group_names
 
         # self._gripper = baxter_interface.Limb(group_name)
-        table_offset = 0.01#0.082
+        table_offset = 0.01 #10 centermeter
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
         rospy.set_param('pick_position', [[0.80426,0.081182, -0.2074+table_offset],[-0.010044,0.99967,-0.0014927,-0.0023655]])
         self.pick_position = rospy.get_param("pick_position")
@@ -181,23 +181,23 @@ class find_block(object):
 
 
 
-    def go_to_pose_goal_2(self,position,orientation):
-        group = self.group
-
-        # goal = self.get_location(block)
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.x = orientation[0]
-        pose_goal.orientation.y = orientation[1]
-        pose_goal.orientation.z = orientation[2]
-        pose_goal.orientation.w = orientation[3]
-        pose_goal.position.x = position[0]
-        pose_goal.position.y = position[1]
-        pose_goal.position.z = -0.20716 +.1
-        group.set_pose_target(pose_goal)
-
-        plan = group.go(wait=True)
-        group.stop()
-        group.clear_pose_targets()
+    # def go_to_pose_goal_2(self,position,orientation):
+    #     group = self.group
+    #
+    #     # goal = self.get_location(block)
+    #     pose_goal = geometry_msgs.msg.Pose()
+    #     pose_goal.orientation.x = orientation[0]
+    #     pose_goal.orientation.y = orientation[1]
+    #     pose_goal.orientation.z = orientation[2]
+    #     pose_goal.orientation.w = orientation[3]
+    #     pose_goal.position.x = position[0]
+    #     pose_goal.position.y = position[1]
+    #     pose_goal.position.z = -0.20716 +.1
+    #     group.set_pose_target(pose_goal)
+    #
+    #     plan = group.go(wait=True)
+    #     group.stop()
+    #     group.clear_pose_targets()
 
     def go_to_pose_goal_3(self,position,orientation):
         group = self.group
@@ -481,28 +481,17 @@ class find_block(object):
 
 
 
-        print "============ Press `Enter` to go above pick position ..."
+        print "============ Press `Enter` to go above second block position ..."
         raw_input()
         self.gripper_open()
-        #self._gripper.calibrate(block=True)
         self._gripper.set_dead_band(1.0)
         self.force_control(1)
-        # position1 = [0.7062,0.49816,0.186]
-        # orientation_1 = [0.13641,0.99033,0.0066117,0.024333]
         pick_position1 = self.pick_position[0]
         pick_position1[2] = self.pick_position[0][2]+0.1
         print pick_position1
         pick_orientation_1 = self.pick_position[1]
         print pick_orientation_1
-        self.go_to_pose_goal_2(pick_position1,pick_orientation_1)
-        # print "============ Press `Enter` to go at pick position ..."
-        # raw_input()
-        # position2 = self.pick_position[0]
-        # position2[2] = self.pick_position[0][2]-0.1
-        # print position2
-        # orientation_2 = self.pick_position[1]
-        # print orientation_2
-        # self.go_to_pose_goal_1(position2,orientation_2)
+        self.go_to_pose_goal_1(pick_position1,pick_orientation_1)
         print "============ Press `Enter` to go down ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
@@ -510,10 +499,6 @@ class find_block(object):
         print "============ Press `Enter` to close gripper  ..."
         raw_input()
         self.gripper_close()
-        # print "============ Press `Enter` to go to add_box ..."
-        # raw_input()
-        # self.add_box()
-        # self.attach_box()
         print "============ Press `Enter` to go up ..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
