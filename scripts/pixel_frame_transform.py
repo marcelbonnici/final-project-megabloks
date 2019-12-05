@@ -91,6 +91,7 @@ def transform_pixel_to_any_frame(point, transformation, intrinsic_matrix):
 
   axis_angles = tf.transformations.euler_from_quaternion(rotation_quaternions)
   rotation_matrix = euler_angles_to_rotationMatrix(axis_angles)
+  rotation_matrix = tf.quaternion_matrix(rotation_quaternions) 
   translation_vector = np.array(translation_vector) * 1000
   translation_vector = translation_vector.reshape(3,1)
   # TODO: Move this intrinsic matrix to a config file after deciding a location
