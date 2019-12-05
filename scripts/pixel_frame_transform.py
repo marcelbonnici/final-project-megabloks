@@ -68,7 +68,7 @@ def euler_angles_to_rotationMatrix(theta) :
 
 
 
-def transform_pixel_to_footprint_frame(point, transformation):
+def transform_pixel_to_any_frame(point, transformation, intrinsic_matrix):
   '''
   Transforms a pixel co-oridantes to 3D distance in terms of the ground plane
   assuming that the foot print frame lies on the ground
@@ -79,6 +79,7 @@ def transform_pixel_to_footprint_frame(point, transformation):
                    respect to the camera frame
   transformation = [[tx,ty,tz],[q1,q2,q3,q4]] where t* corresponds to translation
                    co-ordinates and q* corresponds to quaternion values
+  intrinsic_matrix - camera_calibration matrix
   Returns:-
   pt_in_foot_print_frame - 3D location of points corresponding to pixel locations
   pt_in_foot_print_frame = [[p1x,p2x,p3x....], [p1y,p2y,p3y...],[p1z,p2z,p3z..]]
@@ -94,9 +95,9 @@ def transform_pixel_to_footprint_frame(point, transformation):
   translation_vector = translation_vector.reshape(3,1)
   # TODO: Move this intrinsic matrix to a config file after deciding a location
   # for config files.
-  intrinsic_matrix = np.array([[1518.3315230088997, 0.0, 633.3583896757208],
-                               [0.0, 1517.6029896637713, 519.0442053995603], 
-                               [0.0, 0.0, 1.0]])
+  # intrinsic_matrix = np.array([[1518.3315230088997, 0.0, 633.3583896757208],
+  #                             [0.0, 1517.6029896637713, 519.0442053995603], 
+  #                             [0.0, 0.0, 1.0]])
   pt_in_foot_print = imgPointToWorldCoord(point, rotation_matrix, translation_vector,
                                           intrinsic_matrix, 0)
   x, y , z = pt_in_foot_print
