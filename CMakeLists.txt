@@ -165,9 +165,11 @@ install(PROGRAMS
    scripts/computer_vision.py
    scripts/move_arm_manual
    scripts/new_find_block
+   scripts/safe_arms
    scripts/setup_blocks_hw
    scripts/setup_blocks_world
    scripts/test_find_block
+   scripts/test_tower.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

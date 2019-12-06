@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+"""
+Set up configuration for hardware testing and moves arm to 'start' position
+
+inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+"""
+
+import argparse
+import struct
+import sys
+import copy
+
+import rospy
+import rospkg
+import numpy as np
+from tf.transformations import quaternion_from_euler as angle_trans
+
+from geometry_msgs.msg import (
+    PoseStamped,
+    Pose,
+    Point,
+    Quaternion,
+)
+from std_msgs.msg import (
+    Header,
+    Empty,
+)
+
+import baxter_interface
+
+class setup(object):
+    def __init__(self, limb, verbose=True):
+        self._limb_name = limb # string
+        self._verbose = verbose # bool
+        self._limb = baxter_interface.Limb(limb)
+        # verify robot is enabled
+        print("Getting robot state... ")
+        self._rs = baxter_interface.RobotEnable(baxter_interface.CHECK_VERSION)
+        self._init_state = self._rs.state().enabled
+
+    def move_to_start(self, start_angles=None):
+        print("Moving the {0} arm to shut disable pose...".format(self._limb_name))
+        if not start_angles:
+            start_angles = dict(zip(self._joint_names, [0]*7))
+        self._guarded_move_to_joint_position(start_angles)
+        rospy.sleep(1.0)
+
+    def _guarded_move_to_joint_position(self, joint_angles):
+        if joint_angles:
+            self._limb.move_to_joint_positions(joint_angles)
+        else:
+            rospy.logerr("No Joint Angles provided for move_to_joint_positions. Staying put.")
+
+def main():
+    rospy.init_node("safe_arms")
+    
+    # wait for the All Clear from emulator startup
+    #rospy.wait_for_message("/robot/sim/started", Empty)
+    
+    limb = 'left'
+    # Starting Joint angles for left arm
+    starting_joint_angles_left = {'left_w0': 0.74,
+                                  'left_w1': 0.82,
+                                  'left_w2': -0.43,
+                                  'left_e0': -0.91,
+                                  'left_e1': 1.77,
+                                  'left_s0': 1.07,
+                                  'left_s1': -0.7}
+    stp_left = setup(limb) 
+
+    limb = 'right'
+    # Starting Joint angles for right arm
+    starting_joint_angles_right = {'right_w0': 0.74,
+                                   'right_w1': 0.82,
+                                   'right_w2': -0.43,
+                                   'right_e0': -0.91,
+                                   'right_e1': 1.77,
+                                   'right_s0': .07,
+                                   'right_s1': -0.7}
+    
+    stp_right = setup(limb)
+
+    # Move to the desired starting angles
+    stp_left.move_to_start(starting_joint_angles_left)
+    stp_right.move_to_start(starting_joint_angles_right)
+    #rospy.spin()
+
+if __name__ == '__main__':
+    sys.exit(main())
