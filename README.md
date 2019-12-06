@@ -37,3 +37,8 @@ Blocks Testing Tools:
 - to play with `moveit` on the actual robot
 	- replace step 1 with: `rosrun blocks setup_blocks_hw`
 	- steps 2-4 are the same for testing on the real robot
+
+- to display a smiley face: 
+	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/smiley.png`
+        - `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/frowny.jpeg`
+
