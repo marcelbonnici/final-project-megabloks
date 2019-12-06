@@ -17,6 +17,7 @@ from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
 
 import baxter_interface
+import tf
 
 class find_block(object):
     def __init__(self):
@@ -28,6 +29,7 @@ class find_block(object):
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
         group_name = 'left_arm'
+        group_name1 = 'right_arm'        
         group = moveit_commander.MoveGroupCommander(group_name)
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                moveit_msgs.msg.DisplayTrajectory,
@@ -36,22 +38,12 @@ class find_block(object):
         planning_frame = group.get_planning_frame()
         print "============ Reference frame: %s" % planning_frame
 
-        eef_link = group.get_end_effector_link()
-        print "============ End effector: %s" % eef_link
-
-        group_names = robot.get_group_names()
-        print "============ Robot Groups:", robot.get_group_names()
-
         print "============ Printing robot state"
         print robot.get_current_state()
         print ""
 
-        self.box_name = 'box'
         self.robot = robot
-        self.scene = scene
         self.group = group
-        self.eef_link = eef_link
-        self.group_names = group_names
 
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
         # rospy.set_param('pick_position', [[0.682995011987,0.0361733278331, -0.287095162438],[-0.00868436126065,0.999768931835,0.00725217767718,0.0182776017772]])
@@ -98,46 +90,6 @@ class find_block(object):
           rospy.sleep(0.1)
           seconds = rospy.get_time()
         return False
-
-    def add_box(self, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        box_pose = geometry_msgs.msg.PoseStamped()
-        box_pose.header.frame_id = "l_gripper_l_finger_tip"
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.z = 0.05 # slightly above the end effector
-        box_pose.pose.position.y = -0.025
-        box_name = "box"
-        scene.add_box(box_name, box_pose, size=(0.05, 0.05, 0.05))
-        self.box_name=box_name
-        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
-
-    def attach_box(self, timeout=4):
-        box_name = self.box_name
-        robot = self.robot
-        scene = self.scene
-        eef_link = self.eef_link
-        group_names = self.group_names
-
-        grasping_group = 'left_hand'
-        touch_links = robot.get_link_names(group=grasping_group)
-        scene.attach_box(eef_link, box_name, touch_links=touch_links)
-        return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
-
-
-    def detach_box(self, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        eef_link = self.eef_link
-        scene.remove_attached_object(eef_link, name=box_name)
-        return self.wait_for_state_update(box_is_known=True, box_is_attached=False, timeout=timeout)
-
-    def remove_box(self, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        scene.remove_world_object(box_name)
-        return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
-
 
     # plan _1 go -z direction
     def plan_cartesian_path_1(self, scale=1):
@@ -240,9 +192,9 @@ class find_block(object):
         print "============ Press `Enter` to go above pick position ..."
         raw_input()
         self.force_control(1)
-        pick_position1 = pick_block_position[0]
-        pick_position1[2] = pick_block_position[0][2]+0.1
-        pick_orientation_1 = pick_block_position[1]
+        pick_position1 = copy.copy(pick_block_position[0])
+        pick_position1[2] = pick_position1[2]+0.1
+        pick_orientation_1 = copy.copy(pick_block_position[1])
         self.go_to_pose_goal_1(pick_position1,pick_orientation_1)
         print "============ Press `Enter` to go down ..."
         raw_input()
@@ -255,7 +207,7 @@ class find_block(object):
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to go horizontal tarward the position to drop box..."
+        print "============ Press `Enter` to go x and y position tarward the position to drop box..."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(place_block_position, scale=-1)
         self.execute_plan(cartesian_plan)
@@ -268,7 +220,7 @@ class find_block(object):
         self.force_control(1)
         rospy.sleep(5)
         self.gripper_open()
-        print "============ Press `Enter` to go vertical  and add force..."
+        print "============ Press `Enter` to go up.."
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
@@ -290,21 +242,53 @@ class find_block(object):
 
     def main(self):
         table_offset = 0.01
-        rospy.set_param('pick_position', [[0.80426,0.081182, -0.2074+table_offset],[-0.010044,0.99967,-0.0014927,-0.0023655]])
+        quaternion = tf.transformations.quaternion_from_euler(-np.pi,0,-np.pi/2) # 1.57079632
+        print("quaternion1{}" .format(quaternion))
+
+        euler = tf.transformations.euler_from_quaternion([-0.010044,0.99967,-0.0014927,-0.0023655])
+        print("euler{}" .format(euler))
+
+        rospy.set_param('pick_position', [[0.80426,0.081182, -0.2074+table_offset],[float(quaternion[0]),float(quaternion[1]),float(quaternion[2]),float(quaternion[3])]])
         pick_block_position1 = rospy.get_param("pick_position")
-
-        rospy.set_param('place_position', [[0.7988,0.1759,-0.20764+table_offset],[-0.015184,0.99955,0.0019307,-0.025678]])
-        place_block_position1 = rospy.get_param("place_position")
-
         pick_block_position2 = pick_block_position1
-
-        rospy.set_param('pick_position', [[0.765, 0.172, -0.2074+table_offset],[-0.010044,0.99967,-0.0014927,-0.0023655]])
-        place_block_position2 = rospy.get_param("pick_position")
-
         pick_block_position3 = pick_block_position1
+        # rospy.set_param('place_position', [[0.7988,0.1759,-0.20764+table_offset],[0, 0.70710678,0,0.70710678]])
+        # place_block_position1 = rospy.get_param("place_position")
+        #
+        # pick_block_position2 = pick_block_position1
+        #
+        # rospy.set_param('place_position2', [[0.765, 0.172, -0.2074+table_offset],[-0.010044,0.99967,-0.0014927,-0.0023655]])
+        # place_block_position2 = rospy.get_param("place_position2")
+        #
+        # pick_block_position3 = pick_block_position1
+        #
+        # rospy.set_param('place_position3', [[ 0.78635, 0.17779,-0.20764+table_offset],[-0.015184,0.99955,0.0019307,-0.025678]])
+        # place_block_position3 = rospy.get_param("place_position3")
 
-        rospy.set_param('place_position', [[ 0.78635, 0.17779,-0.20764+table_offset],[-0.015184,0.99955,0.0019307,-0.025678]])
-        place_block_position2 = rospy.get_param("place_position")
+
+        # get block position x, y and rotation angle
+        block_positions = rospy.get_param("tower")
+
+        for i in range (len(block_positions)):
+            if block_positions[i][2] == 1:
+                block_positions[i][2] == -np.pi/2
+
+        block_position1 = block_positions[0]
+        block_position2 = block_positions[1]
+        block_position3 = block_positions[2]
+
+        print("block_position1{}" .format(block_position1))
+        print("block_position2{}" .format(block_position2))
+        print("block_position3{}" .format(block_position3))
+
+        quaternion1 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position1[2]) # 1.57079632
+        quaternion2 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position2[2]) # 1.57079632
+        quaternion3 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position3[2]) # 1.57079632
+
+        print("quaternion1{}" .format(quaternion))
+        place_block_position1 = [[block_position1[0],block_position1[1],-0.20764+table_offset],[float(quaternion1[0]),float(quaternion1[1]),float(quaternion1[2]),float(quaternion1[3])]]
+        place_block_position2 = [[block_position2[0],block_position2[1],-0.20764+table_offset],[float(quaternion2[0]),float(quaternion2[1]),float(quaternion2[2]),float(quaternion2[3])]]
+        place_block_position3 = [[block_position3[0],block_position3[1],-0.20764+table_offset],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
 
         print "============ calibrate gripper ..."
         self._gripper.calibrate(block=True)
