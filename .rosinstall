@@ -1,0 +1,8 @@
+- git:
+    local-name: blocks
+    uri: https://github.com/ME495-EmbeddedSystems/final-project-megabloks.git
+    version: master
+- git:
+    local-name: moveit_robots
+    uri: https://github.com/apinosky/moveit_robots.git
+    version: melodic-devel
