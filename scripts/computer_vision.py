@@ -28,6 +28,8 @@ class BlockLocaliser:
     # self.camera_image_name = '/cameras/right_hand_camera/camera'
     self.camera_image_name = '/cameras/right_hand_camera/image'
     self.bridge = CvBridge()
+    self.image_output = rospy.Publisher("/all_blocks/op_image", Image, queue_size = 1)
+    self.head_display = rospy.Publisher("/next_block/op_image", Image, queue_size = 1)
 
 
   def get_transform_between_frames(self, reference_frame, target_frame):
@@ -52,6 +54,7 @@ class BlockLocaliser:
 
 
   def get_all_block_poses(self, image):
+    image = image.copy()
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
   
     lower_red = np.array([0,120,70], dtype = "uint8")
@@ -77,11 +80,12 @@ class BlockLocaliser:
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
   
     if not contours:
-      return [np.array([-1, -1]), 0]
+      return [np.array([[-1], [-1]]), 0]
   
     selected_points = []
     x_points, y_points = [], []
     orientations = []
+    self.all_blocks = []
     for selected_contour in filtered_contours:
       # Reason: we need the bottom most point of the object(y+h) but the
       # center of the object in terms of the object width
@@ -92,20 +96,30 @@ class BlockLocaliser:
       #xc, yc = sorted_points[-1]
       xc, yc = x + w/2, y + h/2
       cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
+      self.all_blocks.append([x, y, x+w, y+h])
       x_points.append(xc)
       y_points.append(yc)
       if w > h:
         orientations.append(0)
       else:
-        orientations.append(90)
-    y_points = [y_points[index] for index in np.argsort(x_points)]
-    x_points = list(sorted(x_points))
+        orientations.append(1)
+    #y_points = [y_points[index] for index in np.argsort(x_points)]
+    #x_points = list(sorted(x_points))
     selected_points = np.array([x_points, y_points])
 
-    cv2.imshow('image', image)
-    cv2.waitKey(0)
+    op_image = self.bridge.cv2_to_imgmsg(image, encoding="passthrough")
+    self.image_output.publish(op_image)
+
+
+    #cv2.imshow('image', image)
+    #cv2.waitKey(0)
 
     return selected_points, orientations 
+
+  def send_target_block_image(self, image, index):
+    image = image.copy()  
+    cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
+    self.head_display.publish(image)
 
 
 
@@ -123,6 +137,14 @@ class BlockLocaliser:
     image_in = rospy.wait_for_message(self.camera_image_name, Image)
     image = self.bridge.imgmsg_to_cv2(image_in, "bgr8")
     pixel_values, orientation = self.get_all_block_poses(image)
+    block_pose = Pose2D()
+
+    if pixel_values[0][0] == -1 and pixel_values[1][0] == -1:
+      block_pose.x = -1000
+      block_pose.y = -1000
+      block_pose.theta = -1000
+      return block_pose
+
     # check if the order is correct and what you expect
     # camera_to_tag_transform = self.get_transform_between_frames(self.marker_frame_name, self.camera_frame_name)
     camera_to_tag_transform = self.get_transform_between_frames(self.camera_frame_name, self.marker_frame_name)
@@ -130,12 +152,24 @@ class BlockLocaliser:
     target_transform = self.get_transform_between_frames(self.ref_frame_name, self.marker_frame_name)
     # pixel_values = [pixel_location[0], pixel_location[1]]
     point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
-    index = random.randint(0, len(point_in_ar_frame)-1)
-    selected_point = np.array([point_in_ar_frame[index][0], point_in_ar_frame[index][1],
-                               point_in_ar_frame[index][2], 1])
+    filtered_points = []
+    for point in point_in_ar_frame:
+        if point[0] < 0.235:
+            filtered_points.append([point[0], point[1], point[2]])
+
+    if not filtered_points:
+      block_pose.x = -1000
+      block_pose.y = -1000
+      block_pose.theta = -1000
+      return block_pose
+
+    print(point_in_ar_frame)
+    index = random.randint(0, len(filtered_points)-1)
+    selected_point = np.array([filtered_points[index][0], filtered_points[index][1],
+                               filtered_points[index][2], 1])
+    self.send_target_block_image(image, index)
 
     point_in_op_frame = self.transform_point(selected_point, target_transform) 
-    block_pose = Pose2D()
     block_pose.x = point_in_op_frame[0]
     block_pose.y = point_in_op_frame[1]
     block_pose.theta = orientation[index]
@@ -149,7 +183,7 @@ def main():
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
-  #blocklocaliser.get_block_position()
+  #blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
