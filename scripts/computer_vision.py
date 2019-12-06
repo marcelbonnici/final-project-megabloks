@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import time
+import random
 
 import rospy
 import tf
@@ -19,9 +22,9 @@ class BlockLocaliser:
     rospy.Service('/blocks/next_pickup', GetBlockPosition, self.get_block_position)
     self.K = np.array(camera_info.K).reshape(3,3)
     self.listener = tf.TransformListener()
-    self.marker_frame_name = 'ar_marker_8'
+    self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
-    self.output_frame_name = 'reference/base'
+    self.ref_frame_name = 'reference/base'
     # self.camera_image_name = '/cameras/right_hand_camera/camera'
     self.camera_image_name = '/cameras/right_hand_camera/image'
     self.bridge = CvBridge()
@@ -68,7 +71,7 @@ class BlockLocaliser:
   
     im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,
                                                 cv2.CHAIN_APPROX_SIMPLE) 
-    expected_area = 4000
+    expected_area = 400
     alpha = 0.8
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
@@ -107,27 +110,31 @@ class BlockLocaliser:
 
 
 
-  def transform_point(point, transform):
+  def transform_point(self, point, transformation):
 
     translation_vector, rotation_quaternions = transformation
-    transformation_matrix = tf.quaternion_matrix(rotation_quaternions) 
-    transformation_matrix[:, :3] = translation_vector
-    point_in_target_frame = translation_matrix.dot(point)
+    transformation_matrix = tf.transformations.quaternion_matrix(rotation_quaternions) 
+    transformation_matrix[:3, 3] = translation_vector
+    point_in_target_frame = transformation_matrix.dot(point)
+    return point_in_target_frame
   
-  def get_block_position(self):
+  def get_block_position(self, data):
 
     image_in = rospy.wait_for_message(self.camera_image_name, Image)
     image = self.bridge.imgmsg_to_cv2(image_in, "bgr8")
     pixel_values, orientation = self.get_all_block_poses(image)
     # check if the order is correct and what you expect
-    camera_to_tag_transform = self.get_transform_between_frames(self.marker_frame_name, self.camera_frame_name)
-    target_transform = self.get_transform_between_frames(self.output_frame_name, self.camera_frame_name)
+    # camera_to_tag_transform = self.get_transform_between_frames(self.marker_frame_name, self.camera_frame_name)
+    camera_to_tag_transform = self.get_transform_between_frames(self.camera_frame_name, self.marker_frame_name)
+    print('got transform')
+    target_transform = self.get_transform_between_frames(self.ref_frame_name, self.marker_frame_name)
     # pixel_values = [pixel_location[0], pixel_location[1]]
     point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
     index = random.randint(0, len(point_in_ar_frame)-1)
-    selected_point = [point_in_ar_frame[index], point_in_ar_frame[index]]
+    selected_point = np.array([point_in_ar_frame[index][0], point_in_ar_frame[index][1],
+                               point_in_ar_frame[index][2], 1])
 
-    point_in_op_frame = transform_point(selected_point, target_transform) 
+    point_in_op_frame = self.transform_point(selected_point, target_transform) 
     block_pose = Pose2D()
     block_pose.x = point_in_op_frame[0]
     block_pose.y = point_in_op_frame[1]
@@ -138,11 +145,11 @@ class BlockLocaliser:
 
 
 def main():
-  image = cv2.imread('/home/senthilpalanisamy/work/courses/embedded_system_me_495/practice_ws/rethink_ws/src/final-project-megabloks/images/selected_image/left0000.jpg')
+  # image = cv2.imread('/home/senthilpalanisamy/work/courses/embedded_system_me_495/practice_ws/rethink_ws/src/final-project-megabloks/images/selected_image/left0000.jpg')
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
-  blocklocaliser.get_block_position()
+  #blocklocaliser.get_block_position()
   rospy.spin()
 
 if __name__=='__main__':
