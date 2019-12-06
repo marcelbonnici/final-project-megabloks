@@ -29,7 +29,7 @@ class BlockLocaliser:
     self.camera_image_name = '/cameras/right_hand_camera/image'
     self.bridge = CvBridge()
     self.image_output = rospy.Publisher("/all_blocks/op_image", Image, queue_size = 1)
-    self.head_display = rospy.Publisher("/next_block/op_image", Image, queue_size = 1)
+    self.head_display = rospy.Publisher("/robot/xdisplay", Image, queue_size = 1)
 
 
   def get_transform_between_frames(self, reference_frame, target_frame):
@@ -119,7 +119,10 @@ class BlockLocaliser:
   def send_target_block_image(self, image, index):
     image = image.copy()  
     cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
-    self.head_display.publish(image)
+    # display resolution of baxter screen
+    display_width, display_height =1024, 600
+    newimg = cv2.resize(image,(display_width, display_height)
+    self.head_display.publish(newimage)
 
 
 
