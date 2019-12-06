@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find blocks)/launch/load_tower.launch" />
+    <test test-name="test_tower" pkg="blocks" type="test_tower.py" />
+</launch>
