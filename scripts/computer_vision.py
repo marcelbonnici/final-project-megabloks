@@ -118,11 +118,13 @@ class BlockLocaliser:
 
   def send_target_block_image(self, image, index):
     image = image.copy()  
-    cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
+    x1, y1, x2, y2 = self.all_blocks[index] 
+    cv2.rectangle(image,(x1,y1),(x2,y2),(0,255,0),2)
     # display resolution of baxter screen
     display_width, display_height =1024, 600
-    newimg = cv2.resize(image,(display_width, display_height)
-    self.head_display.publish(newimage)
+    newimg = cv2.resize(image,(display_width, display_height))
+    newimg = self.bridge.cv2_to_imgmsg(newimg, encoding="passthrough")
+    self.head_display.publish(newimg)
 
 
 
@@ -186,7 +188,7 @@ def main():
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
-  #blocklocaliser.get_block_position('')
+  blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
