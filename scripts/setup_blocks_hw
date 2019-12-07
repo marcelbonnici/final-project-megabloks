@@ -125,19 +125,19 @@ def main():
     stp_right.move_to_start(starting_joint_angles_right)
 
     # set up cameras
-    try:
-        close_cam('left_hand_camera')
-    except:
-        pass
-    try:
-        close_cam('right_hand_camera')
-    except:
-        pass
-    try:
-        close_cam('head_camera')
-    except:
-        pass
-    open_cam('right_hand_camera',(1280,800))
+    #try:
+    #    close_cam('left_hand_camera')
+    #except:
+    #    pass
+    #try:
+    #    close_cam('right_hand_camera')
+    #except:
+    #    pass
+    #try:
+    #    close_cam('head_camera')
+    #except:
+    #    pass
+    #open_cam('right_hand_camera',(1280,800))
     
     print("Ready!")
     rospy.spin()
