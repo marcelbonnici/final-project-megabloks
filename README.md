@@ -17,53 +17,68 @@
 	- branch: melodic-devel
 
 ## General Testing Tools: 
+### Camera Tools
 - To view a baxter camera while the robot or simulation is running 
 	- `rosrun image_view image_view image:=/cameras/left_hand_camera/image` 
 	- can also sub in `right_hand_camera` or `head_camera` to view other two cameras
 	- simulation lets you view all 3 cameras at once even though you can only actually view two cameras at once on the real hardware
-- To get a location of a model in gazebo: 
+- To enable or disable the cameras:
+	- `rosrun baxter_tools camera_control.py -o right_hand_camera'
+	-  can sub in `c` for `o` to close camera
+	- can sub in `left_hand*` or `head*` to control the other cameras
+### Display Tools
+- To display a smiley face:
+	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/smiley.png`
+	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/frowny.jpeg`
+### Services
+- To get a location of a model in gazebo (if running the testing simulation): 
 	- `rosservice call /gazebo/get_model_state "model_name: 'block1'"` 
 	- can also sub in any other model for `block1`
+- To get the location of the of a block through the blocks service:
+	- `rosservice call /blocks/next_pickup`
+	- Returns the location of a detected block
+### Miscellaneous Robot Tools
 - To view coordinate transforms in the command line: 
-        - `rosrun tf tf_echo /l_gripper /torso`
-        - command above is of the form tf_echo <source_frame> <target_frame>
+	- `rosrun tf tf_echo /l_gripper /torso`
+	- command above is of the form tf_echo <source_frame> <target_frame>
 	- According to baxter.srdf.xacro, the `left_arm` group should be from the `base_link = "torso"` to the `tip_link = "left_gripper"`
 	- NOTE: This value might not match RVIZ ... should explore more
 - To view workspace in RVIZ, check: 
 	- MotionPlanning > Planning Request > Show Workspace
-- To move the arms to a safe position (away from table) before shutdown, 
+- To move the arms to a safe position (away from table), 
 	- `rosrun blocks safe_arms`
-- To display a smiley face:
-        - `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/smiley.png`
-        - `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/frowny.jpeg`
+- To view the current arm positions in joint coordinates:
+	- `rostopic echo /robot/joint_states`
+	- These can be used to update the positions in `setup_blocks_hw` 
 
 ## Blocks Testing Tools:
-### To play with `moveit` for the actual robot:
-#### A. Dont forget to source: 
-`source setup/setup/baxter.bash`
+### A. Dont forget to source: 
+`source setup/baxter.bash`
 - you can check the connection with `ping 10.42.0.2`
-#### B. Either run the launch file or steps 1-3: 
+### B. Either run the launch file or steps 1-3: 
 `roslaunch blocks setup_blocks.launch`
 
 1. `rosrun blocks setup_blocks_hw`
-	- this moves the arms above the table before executing the setup file
-	- then it moves to a start position
-	- also sets up cameras 
+	- Enables the robot 
+	- Moves the arms above the table (`safe_arms` position)
+	- Then it moves to the start position
+	- Also sets up cameras (TBR, currently commented out)
 2. `roslaunch blocks load_tower.launch`
-	- loads the block locations into the rosparam list
+	- Loads the block locations into the rosparam list
 3. `roslaunch blocks ar_track_baxter_cam.launch`
-	- loads the computer vision node and supporting nodes
-#### C. Manually enable joint action trajectory server 
+	- Loads the computer vision node and supporting nodes
+### C. Manually enable joint action trajectory server 
 `rosrun baxter_interface joint_trajectory_action_server.py` 
-#### D. Run:
+### D. Run:
 1. `roslaunch baxter_moveit_config baxter_grippers.launch`
 	- Starts moveit
 2. `rosrun blocks test_find_block` 
 	- Moves the robot from detected block locations to hard-coded place positions
-(eventually, will be able to run `roslaunch blocks run_blocks.launch`, but not until we get rid of 'inputs' where you press enter in `test_find_block` debugging
-#### E. When you're done, here are the functions to shut down safely:
+
+(Eventually, will be able to run `roslaunch blocks run_blocks.launch`, but not until we get rid of 'inputs' where you press enter in `test_find_block` debugging)
+### E. When you're done, here are the functions to shut down safely:
 1. Shut down all nodes, then run: 
 2. `rosrun blocks safe_arms`
 	- Run this when you're done :)
 3. `rosrun baxter_tools enable_robot.py -d`
-	- disable the robot
+	- Disable the robot
