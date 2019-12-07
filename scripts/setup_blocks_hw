@@ -26,7 +26,9 @@ from std_msgs.msg import (
     Empty,
 )
 
+from baxter_interface.camera import CameraController
 import baxter_interface
+
 
 class setup(object):
     def __init__(self, limb, verbose=True):
@@ -65,8 +67,21 @@ class setup(object):
         self._gripper.close()
         rospy.sleep(1.0)
 
+
+def open_cam(camera, res):
+
+  if not any((res[0] == r[0] and res[1] == r[1]) for r in CameraController.MODES):
+    rospy.logerr("Invalid resolution provided.")
+    # Open camera
+    cam = CameraController(camera) # Create camera object
+    cam.resolution = res # Set resolution
+    cam.open() # open
+    # Close camera
+def close_cam(camera):
+  cam = CameraController(camera) # Create camera object
+  cam.close() # close
+
 def main():
-    global num_blocks 
     num_blocks = 3 # reducing number for testing
 
     rospy.init_node("test_hw")
@@ -100,6 +115,10 @@ def main():
     # Move to the desired starting angles
     stp_left.move_to_start(starting_joint_angles_left)
     stp_right.move_to_start(starting_joint_angles_right)
+    close_cam('left_hand_camera')
+    close_cam('right_hand_camera')
+    close_cam('head_camera')
+    open_cam('right_hand_camera',(1280,800))
     #rospy.spin()
 
 if __name__ == '__main__':
