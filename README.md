@@ -40,8 +40,7 @@
 ## Blocks Testing Tools:
 ### To play with `moveit` for the actual robot:
 #### A. Dont forget to source: `source setup/setup/baxter.bash`
-	- connect to the robot
-	- you can check the connection with `ping 10.42.0.2`
+you can check the connection with `ping 10.42.0.2`
 #### B. Either run `roslaunch blocks setup_blocks.launch` or the following:
 1. `rosrun blocks setup_blocks_hw`
 	- this moves the arms above the table before executing the setup file
@@ -52,7 +51,6 @@
 3. `roslaunch blocks ar_track_baxter_cam.launch`
 	- loads the computer vision node and supporting nodes
 #### C. Manually enable joint action trajectory server `rosrun baxter_interface joint_trajectory_action_server.py` 
-	- Starts joint trajectory server
 #### D. Either run `roslaunch blocks run_blocks.launch` or the following:
 1. `roslaunch baxter_moveit_config baxter_grippers.launch`
 	- Starts moveit
