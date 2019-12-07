@@ -1,10 +1,10 @@
 # ME 495: Embedded Systems (Fall 2019)
 ## Final Project - MegaBloks
 ### Group Members:
-Allie Pinosky
-Luxi Huang
-Marcel Bonnici
-Senthil Palanisamy
+- Allie Pinosky
+- Luxi Huang
+- Marcel Bonnici
+- Senthil Palanisamy
 
 #### Capabilites:
 - Locate placed blocks
@@ -38,34 +38,36 @@ Senthil Palanisamy
         - `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/frowny.jpeg`
 
 #### Blocks Testing Tools:
-- To play with `moveit` for the actual robot:
-  - Dont forget to source: `source setup/setup/baxter.bash`
+##### To play with `moveit` for the actual robot:
+###### Dont forget to source: 
+1. `source setup/setup/baxter.bash`
 	- connect to the robot
 	- you can check the connection with `ping 10.42.0.2`
-  - Equivalent to `setup_blocks.launch`:
-	1. `rosrun blocks setup_blocks_hw`
-                - this moves the arms above the table before executing the setup file
-		- then it moves to a start position
-		- also sets up cameras 
-	2. `roslaunch blocks load_tower.launch`
-                - loads the block locations into the rosparam list
-	3. `roslaunch blocks ar_track_baxter_cam.launch`
-                - loads the computer vision node and supporting nodes
-  -  Manually enable joint action trajectory server `rosrun baxter_interface joint_trajectory_action_server.py` 
+###### Equivalent to `setup_blocks.launch`:
+1. `rosrun blocks setup_blocks_hw`
+	- this moves the arms above the table before executing the setup file
+	- then it moves to a start position
+	- also sets up cameras 
+2. `roslaunch blocks load_tower.launch`
+	- loads the block locations into the rosparam list
+3. `roslaunch blocks ar_track_baxter_cam.launch`
+	- loads the computer vision node and supporting nodes
+###### Manually enable joint action trajectory server 
+1. `rosrun baxter_interface joint_trajectory_action_server.py` 
 	- Starts joint trajectory server
-  -  Equivalent to `run_blocks.launch`:
-	2. `roslaunch baxter_moveit_config baxter_grippers.launch`
-		- Starts moveit
-	3. `rosrun blocks test_find_block` 
-		- Moves the robot arm through a random sequence of three trajectories 
-		- These can be modified by changing the positions and orientions in the `get_location` sub function
-  - When you're done, here are the functions to shut down safely:
-	1. rosrun blocks safe_arms`
-		- Run this when you're done :)
-	2. `rosrun baxter_tools enable_robot.py -d`
-		- disable the robot
+###### Equivalent to `run_blocks.launch`:
+1. `roslaunch baxter_moveit_config baxter_grippers.launch`
+	- Starts moveit
+3. `rosrun blocks test_find_block` 
+	- Moves the robot arm through a random sequence of three trajectories 
+	- These can be modified by changing the positions and orientions in the `get_location` sub function
+###### When you're done, here are the functions to shut down safely:
+1. rosrun blocks safe_arms`
+	- Run this when you're done :)
+2. `rosrun baxter_tools enable_robot.py -d`
+	- disable the robot
 
-- to play with `moveit` in simulation robot
-	- replace step 1 with: `roslaunch blocks baxter_gazebo_test.launch`
-	- steps 2-4 are the same for testing on the real robot
+##### to play with `moveit` in simulation robot
+- replace step 1 with: `roslaunch blocks baxter_gazebo_test.launch`
+- steps 2-4 are the same for testing on the real robot
 
