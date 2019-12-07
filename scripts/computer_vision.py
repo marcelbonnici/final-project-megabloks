@@ -6,6 +6,7 @@ import random
 import rospy
 import tf
 import numpy as np
+import rospkg
 
 from pixel_frame_transform import *
 from sensor_msgs.msg import Image
@@ -25,7 +26,12 @@ class BlockLocaliser:
     self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
     self.ref_frame_name = 'reference/base'
-    frowny_face_image = cv2.imread('./images/frowny.jpeg')
+    #frowny_face_image = cv2.imread('./images/frowny.jpeg')
+
+    rospack = rospkg.RosPack()
+    rospack.list() 
+    frowny_face_image = cv2.imread(rospack.get_path('blocks')+'/images/frowny.jpeg')
+
     self.bridge = CvBridge()
     self.frowny_face = self.bridge.cv2_to_imgmsg(frowny_face_image, encoding="passthrough")
     # self.camera_image_name = '/cameras/right_hand_camera/camera'
@@ -169,6 +175,7 @@ class BlockLocaliser:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
+      #print(type(self.frowny_face)
       self.head_display.publish(self.frowny_face)
 
       return block_pose
@@ -192,6 +199,7 @@ def main():
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
+  
   blocklocaliser.get_block_position('')
   rospy.spin()
 
