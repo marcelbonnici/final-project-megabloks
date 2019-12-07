@@ -57,7 +57,7 @@ you can check the connection with `ping 10.42.0.2`
 3. `rosrun blocks test_find_block` 
 	- Moves the robot from detected block locations to hard-coded place positions
 #### E. When you're done, here are the functions to shut down safely:
-1. rosrun blocks safe_arms`
+1. `rosrun blocks safe_arms`
 	- Run this when you're done :)
 2. `rosrun baxter_tools enable_robot.py -d`
 	- disable the robot
