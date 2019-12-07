@@ -39,9 +39,12 @@
 
 ## Blocks Testing Tools:
 ### To play with `moveit` for the actual robot:
-#### A. Dont forget to source: `source setup/setup/baxter.bash`
-you can check the connection with `ping 10.42.0.2`
-#### B. Either run `roslaunch blocks setup_blocks.launch` or the following:
+#### A. Dont forget to source: 
+`source setup/setup/baxter.bash`
+- you can check the connection with `ping 10.42.0.2`
+#### B. Either run the launch file or steps 1-3: 
+`roslaunch blocks setup_blocks.launch`
+
 1. `rosrun blocks setup_blocks_hw`
 	- this moves the arms above the table before executing the setup file
 	- then it moves to a start position
@@ -50,14 +53,17 @@ you can check the connection with `ping 10.42.0.2`
 	- loads the block locations into the rosparam list
 3. `roslaunch blocks ar_track_baxter_cam.launch`
 	- loads the computer vision node and supporting nodes
-#### C. Manually enable joint action trajectory server `rosrun baxter_interface joint_trajectory_action_server.py` 
-#### D. Either run `roslaunch blocks run_blocks.launch` or the following:
+#### C. Manually enable joint action trajectory server 
+`rosrun baxter_interface joint_trajectory_action_server.py` 
+#### D. Run:
 1. `roslaunch baxter_moveit_config baxter_grippers.launch`
 	- Starts moveit
-3. `rosrun blocks test_find_block` 
+2. `rosrun blocks test_find_block` 
 	- Moves the robot from detected block locations to hard-coded place positions
+(eventually, will be able to run `roslaunch blocks run_blocks.launch`, but not until we get rid of 'inputs' where you press enter in `test_find_block` debugging
 #### E. When you're done, here are the functions to shut down safely:
-1. `rosrun blocks safe_arms`
+1. Shut down all nodes, then run: 
+2. `rosrun blocks safe_arms`
 	- Run this when you're done :)
-2. `rosrun baxter_tools enable_robot.py -d`
+3. `rosrun baxter_tools enable_robot.py -d`
 	- disable the robot

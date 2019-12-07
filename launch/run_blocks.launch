@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
-  <include file="$(find baxter_moveit_config)/launch/baxter_grippers.launch" doc="sets up grippers for moveit"/>
+  <include file="$(find baxter_moveit_config)/launch/baxter_grippers.launch"/>
   <!--node pkg="baxter_interface" type="joint_trajectory_action_server.py" name="joint_trajectory_action_server.py" doc="enable joint trajectory action server for moveit"/-->
-  <node pkg="blocks" type="test_find_block" name="test_find_block" doc="find blocks trajectories"/>
+  <node pkg="blocks" type="test_find_block" name="test_find_block"/>
 </launch>
