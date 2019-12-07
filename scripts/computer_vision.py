@@ -82,7 +82,7 @@ class BlockLocaliser:
   
     im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,
                                                 cv2.CHAIN_APPROX_SIMPLE) 
-    expected_area = 400
+    expected_area = 4000
     alpha = 0.8
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
