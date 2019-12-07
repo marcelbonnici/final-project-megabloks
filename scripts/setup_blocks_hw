@@ -87,13 +87,16 @@ def main():
 
     limb = 'right'
     # Starting Joint angles for right arm
-    starting_joint_angles_right = {'right_w0': -.10,  #0.85,
-                                   'right_w1': 1.53,  #1.52,
-                                   'right_w2': .34,   #0.05,
-                                   'right_e0': .14,   #-0.99,
-                                   'right_e1': .03,   #0.80,
-                                   'right_s0': 1.1,   #1.46,
-                                   'right_s1': -.22}  #-0.46}
+
+    starting_joint_angles_right = {'right_w0': -0.06,
+                                   'right_w1': 1.77,
+                                   'right_w2': 0.35,
+                                   'right_e0': 0.03,
+                                   'right_e1': -0.03,
+                                   'right_s0': 1.15,
+                                   'right_s1': -0.12}
+    
+
     
     stp_right = setup(limb)
 

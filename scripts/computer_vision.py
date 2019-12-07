@@ -25,9 +25,11 @@ class BlockLocaliser:
     self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
     self.ref_frame_name = 'reference/base'
+    frowny_face_image = cv2.imread('./images/frowny.jpeg')
+    self.bridge = CvBridge()
+    self.frowny_face = self.bridge.cv2_to_imgmsg(frowny_face_image, encoding="passthrough")
     # self.camera_image_name = '/cameras/right_hand_camera/camera'
     self.camera_image_name = '/cameras/right_hand_camera/image'
-    self.bridge = CvBridge()
     self.image_output = rospy.Publisher("/all_blocks/op_image", Image, queue_size = 1)
     self.head_display = rospy.Publisher("/robot/xdisplay", Image, queue_size = 1)
 
@@ -79,7 +81,7 @@ class BlockLocaliser:
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
   
-    if not contours:
+    if not filtered_contours:
       return [np.array([[-1], [-1]]), 0]
   
     selected_points = []
@@ -119,13 +121,13 @@ class BlockLocaliser:
   def send_target_block_image(self, image, index):
     image = image.copy()  
     x1, y1, x2, y2 = self.all_blocks[index] 
-    cv2.rectangle(image,(x1,y1),(x2,y2),(0,255,0),2)
+    cv2.rectangle(image,(x1,y1),(x2,y2),(0,255,0),10)
     # display resolution of baxter screen
     display_width, display_height =1024, 600
     newimg = cv2.resize(image,(display_width, display_height))
+    newimg = cv2.flip( newimg, -1 )
     newimg = self.bridge.cv2_to_imgmsg(newimg, encoding="passthrough")
     self.head_display.publish(newimg)
-
 
 
 
@@ -148,6 +150,7 @@ class BlockLocaliser:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
+      self.head_display.publish(self.frowny_face)
       return block_pose
 
     # check if the order is correct and what you expect
@@ -166,6 +169,8 @@ class BlockLocaliser:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
+      self.head_display.publish(self.frowny_face)
+
       return block_pose
 
     print(point_in_ar_frame)
@@ -184,7 +189,6 @@ class BlockLocaliser:
 
 
 def main():
-  # image = cv2.imread('/home/senthilpalanisamy/work/courses/embedded_system_me_495/practice_ws/rethink_ws/src/final-project-megabloks/images/selected_image/left0000.jpg')
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
