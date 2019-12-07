@@ -2,6 +2,7 @@
 <launch>
   <arg name="gui" default="true" />
   <include file="$(find baxter_gazebo)/launch/baxter_world.launch" pass_all_args='true'/>
+  <rosparam command="load" file="$(find blocks)/config/tower.yaml"/>
   <node pkg="blocks" type="setup_blocks_world" name="setup_blocks_world"/>
   <remap from="joint_states" to="robot/joint_states"/>
 </launch>
