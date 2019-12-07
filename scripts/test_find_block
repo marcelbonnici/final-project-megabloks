@@ -27,16 +27,18 @@ class find_block(object):
         moveit_commander.roscpp_initialize(joint_state_topic)
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
-        scene = moveit_commander.PlanningSceneInterface()
+        # scene = moveit_commander.PlanningSceneInterface()
         group_name = 'left_arm'
         group_name1 = 'right_arm'
         group = moveit_commander.MoveGroupCommander(group_name)
+        group1 = moveit_commander.MoveGroupCommander(group_name1)
+
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                moveit_msgs.msg.DisplayTrajectory,
                                                queue_size=20)
 
-        planning_frame = group.get_planning_frame()
-        print "============ Reference frame: %s" % planning_frame
+        # planning_frame = group.get_planning_frame()
+        # print "============ Reference frame: %s" % planning_frame
 
         print "============ Printing robot state"
         print robot.get_current_state()
@@ -44,7 +46,7 @@ class find_block(object):
 
         self.robot = robot
         self.group = group
-
+        self.group1 = group1
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
         # rospy.set_param('pick_position', [[0.682995011987,0.0361733278331, -0.287095162438],[-0.00868436126065,0.999768931835,0.00725217767718,0.0182776017772]])
         # self.pick_position = rospy.get_param("pick_position")
@@ -76,20 +78,18 @@ class find_block(object):
         group.stop()
         group.clear_pose_targets()
 
-    def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        start = rospy.get_time()
-        seconds = rospy.get_time()
-        while (seconds - start < timeout) and not rospy.is_shutdown():
-          attached_objects = scene.get_attached_objects([box_name])
-          is_attached = len(attached_objects.keys()) > 0
-          is_known = box_name in scene.get_known_object_names()
-          if (box_is_attached == is_attached) and (box_is_known == is_known):
-            return True
-          rospy.sleep(0.1)
-          seconds = rospy.get_time()
-        return False
+    def go_to_pose_goal_2(self,orientation):
+        group = self.group
+        pose_goal = group.get_current_pose().pose
+        pose_goal.orientation.x = orientation[0]
+        pose_goal.orientation.y = orientation[1]
+        pose_goal.orientation.z = orientation[2]
+        pose_goal.orientation.w = orientation[3]
+        group.set_pose_target(pose_goal)
+
+        plan = group.go(wait=True)
+        group.stop()
+        group.clear_pose_targets()
 
     # plan _1 go -z direction
     def plan_cartesian_path_1(self, scale=1):
@@ -139,6 +139,8 @@ class find_block(object):
                                            0.0)         # jump_threshold
         return plan, fraction
 
+
+    # this cartesian_plan find the difference Z of place and pick positions
     def plan_cartesian_path_4(self,place_block_position, scale=1):
         group = self.group
         waypoints = []
@@ -153,9 +155,70 @@ class find_block(object):
                                            0.0)         # jump_threshold
         return plan, fraction
 
+    def plan_cartesian_path_5(self,scale=1):
+        group1 = self.group1
+        waypoints = []
+        # get current state
+        y_distance = 0.3
+        x_distance = 0.1
+        # find the difference between current state and y_direction
+        # find the difference between current state and x_direction
+        wpose = group1.get_current_pose().pose
+        wpose.position.y += scale * y_distance  # move towards right "-",
+        wpose.position.x += scale * x_distance
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group1.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
+
+
+
+    # control right arm back
+    def plan_cartesian_path_6(self,scale=1):
+        group1 = self.group1
+        waypoints = []
+        # get current state
+        y_distance = 0.3
+        x_distance = 0.1
+        # find the difference between current state and y_direction
+        # find the difference between current state and x_direction
+        wpose = group1.get_current_pose().pose
+        wpose.position.y -= scale * y_distance  # move towards right "-",
+        wpose.position.x -= scale * x_distance
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group1.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
+
+    def plan_cartesian_path_7(self,scale=1):
+        group = self.group
+        waypoints = []
+        # get current state
+        y_distance = 0.3
+        x_distance = 0.2
+        # find the difference between current state and y_direction
+        # find the difference between current state and x_direction
+        wpose = group.get_current_pose().pose
+        wpose.position.y -= scale * y_distance  # move towards right "-",
+        wpose.position.x += scale * x_distance
+        waypoints.append(copy.deepcopy(wpose))
+        (plan, fraction) = group.compute_cartesian_path(
+                                           waypoints,   # waypoints to follow
+                                           0.01,        # eef_step
+                                           0.0)         # jump_threshold
+        return plan, fraction
+
     def execute_plan(self, plan):
         group = self.group
         group.execute(plan, wait=True)
+
+    def execute_plan1(self, plan):
+        group1 = self.group1
+        group1.execute(plan, wait=True)
 
     def gripper_close(self):
         self._gripper.close()
@@ -189,6 +252,12 @@ class find_block(object):
         print(" dead_zone {}" .format(dead_zone))
 
     def pick_and_place(self, pick_block_position, place_block_position):
+
+
+        print "============ Press `Enter` to move away right arm..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_5(scale=-1)
+        self.execute_plan1(cartesian_plan)
         print "============ Press `Enter` to go above pick position ..."
         raw_input()
         self.force_control(1)
@@ -211,6 +280,12 @@ class find_block(object):
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(place_block_position, scale=-1)
         self.execute_plan(cartesian_plan)
+        print "============ Press `Enter` to go above place position ..."
+        raw_input()
+        place_orientation_1 = copy.copy(place_block_position[1])
+        self.go_to_pose_goal_2(place_orientation_1)
+
+
         print "============ Press `Enter` to go vertical  and add force..."
         raw_input()
         self.force_control(0)
@@ -239,14 +314,23 @@ class find_block(object):
         self.execute_plan(cartesian_plan)
         self.force_control(1)
 
+        print "============ Press `Enter` to move away left arm..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_7(scale=-1)
+        self.execute_plan(cartesian_plan)
+
+        print "============ Press `Enter` to move right arm back..."
+        raw_input()
+        cartesian_plan, fraction = self.plan_cartesian_path_6(scale=-1)
+        self.execute_plan1(cartesian_plan)
 
     def main(self):
         table_offset = 0.01
         quaternion = tf.transformations.quaternion_from_euler(-np.pi,0,-np.pi/2) # 1.57079632
         print("quaternion1{}" .format(quaternion))
 
-        euler = tf.transformations.euler_from_quaternion([-0.010044,0.99967,-0.0014927,-0.0023655])
-        print("euler{}" .format(euler))
+        # euler = tf.transformations.euler_from_quaternion([-0.010044,0.99967,-0.0014927,-0.0023655])
+        # print("euler{}" .format(euler))
 
         rospy.set_param('pick_position', [[0.80426,0.081182, -0.2074+table_offset],[float(quaternion[0]),float(quaternion[1]),float(quaternion[2]),float(quaternion[3])]])
         pick_block_position1 = rospy.get_param("pick_position")
@@ -271,7 +355,7 @@ class find_block(object):
 
         for i in range (len(block_positions)):
             if block_positions[i][2] == 1:
-                block_positions[i][2] == -np.pi/2
+                block_positions[i][2] == np.pi/2
 
         block_position1 = block_positions[0]
         block_position2 = block_positions[1]
@@ -291,7 +375,7 @@ class find_block(object):
         place_block_position3 = [[block_position3[0],block_position3[1],-0.20764+table_offset],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
 
         print "============ calibrate gripper ..."
-        self._gripper.calibrate(block=True)
+        # self._gripper.calibrate(block=True)
         self._gripper.set_dead_band(1.0)
 
         print "============ go to the first block postion..."
