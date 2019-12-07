@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <rosparam command="load" file="$(find blocks)/config/tower.yaml" doc="loads place locations"/>
+  <include file="$(find blocks)/launch/bar_track_baxter_cam.launch" doc="runs computer vision"/>
+  <node pkg="blocks" type="setup_blocks_hw" name="setup_blocks_hw" doc="setup node"/>
+</launch>
