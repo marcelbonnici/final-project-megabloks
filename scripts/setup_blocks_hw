@@ -103,19 +103,19 @@ def main():
     # Move to the desired starting angles
     stp_left.move_to_start(starting_joint_angles_left)
     stp_right.move_to_start(starting_joint_angles_right)
-    try:
-        close_cam('left_hand_camera')
-    except:
-        pass
-    try:
-        close_cam('right_hand_camera')
-    except:
-        pass
-    try:
-        close_cam('head_camera')
-    except:
-        pass
-    open_cam('right_hand_camera',(1280,800))
+    # try:
+    #     close_cam('left_hand_camera')
+    # except:
+    #     pass
+    # try:
+    #     close_cam('right_hand_camera')
+    # except:
+    #     pass
+    # try:
+    #     close_cam('head_camera')
+    # except:
+    #     pass
+    # open_cam('right_hand_camera',(1280,800))
     #rospy.spin()
 
 if __name__ == '__main__':

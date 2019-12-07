@@ -18,5 +18,5 @@
 	</node>
   <arg name="rvizconfig" default="$(find blocks)/rviz/artags_baxter.rviz"/>
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
-  <node pkg="blocks" name="pkg" type="computer_vision.py"/>
+  <!--node pkg="blocks" name="pkg" type="computer_vision.py"/-->
 </launch>
