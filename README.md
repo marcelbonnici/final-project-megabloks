@@ -23,19 +23,35 @@ General Testing Tools:
 	- `rosrun blocks safe_arms`
 
 Blocks Testing Tools:
-- To manually play with `moveit` in simulation
-	1. `roslaunch blocks baxter_gazebo_test.launch` 
-		- Runs baxter_gazebo, enables robot, and sets up dummy environment in gazebo
-	2. `rosrun baxter_interface joint_trajectory_action_server.py` 
+- To play with `moveit` for the actual robot:
+	1. `source setup/setup/baxter.bash`
+		- connect to the robot
+		- you can check the connection with `ping 10.42.0.2`
+	2. `rosrun baxter_tools enable_robot.py -e`
+		- enable the robot
+	3. `rosrun blocks safe_arms`
+		- this moves the arms above the table before executing the setup file
+		- you should also run this before shutting down to make sure the arms don't hit the table when you disable the robot
+	4. `rosrun blocks setup_blocks_hw` 
+	5. `rosrun baxter_interface joint_trajectory_action_server.py` 
 		- Starts joint trajectory server
-	3. `roslaunch baxter_moveit_config baxter_grippers.launch`
+	6. `roslaunch baxter_moveit_config baxter_grippers.launch`
 		- Starts moveit
-	4. `rosrun blocks find_block_manual` 
+	7. `roslaunch blocks load_tower.launch`
+		- loads the block locations into the rosparam list
+	8. `roslaunch blocks ar_track_baxter_cam.launch`
+		- loads the computer vision node and supporting nodes
+	9. `rosrun blocks find_block_manual` 
 		- Moves the robot arm through a random sequence of three trajectories 
 		- These can be modified by changing the positions and orientions in the `get_location` sub function
+        10. rosrun blocks safe_arms`
+		- Run this when you're done :)
+        11. `rosrun baxter_tools enable_robot.py -d`
+		- disable the robot
 
-- to play with `moveit` on the actual robot
-	- replace step 1 with: `rosrun blocks setup_blocks_hw`
+
+- to play with `moveit` in simulation robot
+	- replace step 1 with: `roslaunch blocks baxter_gazebo_test.launch`
 	- steps 2-4 are the same for testing on the real robot
 
 - to display a smiley face: 
