@@ -61,15 +61,16 @@ class setup_arm(object):
         rospy.sleep(1.0)
 
 
-def open_cam(camera, res):
 
-  if not any((res[0] == r[0] and res[1] == r[1]) for r in CameraController.MODES):
+def open_cam(camera, resolution):
+  is_resolution_valid = any((resolution[0] == r[0] and resolution[1] == r[1]) for r in CameraController.MODES)
+
+  if not is_resolution_valid: 
     rospy.logerr("Invalid resolution provided.")
     # Open camera
-    cam = CameraController(camera) # Create camera object
-    cam.resolution = res # Set resolution
-    cam.open() # open
-    # Close camera
+  cam = CameraController(camera) # Create camera object
+  cam.resolution = resolution # Set resolution
+  cam.open() # open
 
 def close_cam(camera):
   cam = CameraController(camera) # Create camera object
@@ -125,19 +126,10 @@ def main():
     stp_right.move_to_start(starting_joint_angles_right)
 
     # set up cameras
-    #try:
-    #    close_cam('left_hand_camera')
-    #except:
-    #    pass
-    #try:
-    #    close_cam('right_hand_camera')
-    #except:
-    #    pass
-    #try:
-    #    close_cam('head_camera')
-    #except:
-    #    pass
-    #open_cam('right_hand_camera',(1280,800))
+    close_cam('left_hand_camera')
+    close_cam('right_hand_camera')
+    close_cam('head_camera')
+    open_cam('right_hand_camera',(1280,800))
     
     print("Ready!")
     rospy.spin()

@@ -103,9 +103,9 @@ def transform_pixel_to_any_frame(point, transformation, intrinsic_matrix):
   pt_in_foot_print = imgPointToWorldCoord(point, rotation_matrix, translation_vector,
                                           intrinsic_matrix, 0)
   x, y , z = pt_in_foot_print
-  y = [y[index] for index in np.argsort(x)]
-  z = [z[index] for index in np.argsort(x)]
-  x = list(sorted(x))
+  #y = [y[index] for index in np.argsort(x)]
+  #z = [z[index] for index in np.argsort(x)]
+  #x = list(sorted(x))
   points_3d = np.array(map(list, zip(x,y,z)))
   # Reason: measurement in calibration process is fully done in mm but the 
   # result is needed in meters.

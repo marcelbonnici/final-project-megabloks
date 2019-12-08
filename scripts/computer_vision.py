@@ -170,7 +170,8 @@ class BlockLocaliser:
     point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
     filtered_points = []
     for point in point_in_ar_frame:
-        if point[0] < 0.235:
+        #if point[0] < 0.235:
+        if point[1] > 0:
             filtered_points.append([point[0], point[1], point[2]])
 
     if not filtered_points:
@@ -187,7 +188,7 @@ class BlockLocaliser:
     selected_point = np.array([filtered_points[index][0], filtered_points[index][1],
                                filtered_points[index][2], 1])
     print('selected_point', selected_point)
-    image_index = [np.array_equal(point_in_ar_frame, selected_point) for i in range(len(point_in_ar_frame))].index(True)
+    image_index = [np.array_equal(point_in_ar_frame[i], selected_point[:3]) for i in range(len(point_in_ar_frame))].index(True)
     self.send_target_block_image(image, image_index)
 
     point_in_op_frame = self.transform_point(selected_point, target_transform) 
@@ -204,7 +205,7 @@ def main():
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
   
-  #blocklocaliser.get_block_position('')
+  blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
