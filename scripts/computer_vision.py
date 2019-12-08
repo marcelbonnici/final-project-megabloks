@@ -23,7 +23,13 @@ class BlockLocaliser:
     rospy.Service('/blocks/next_pickup', GetBlockPosition, self.get_block_position)
     self.K = np.array(camera_info.K).reshape(3,3)
     self.listener = tf.TransformListener()
-    self.marker_frame_name = 'ar_marker_6'
+    
+    self.all_marker_frame_name_list = ['ar_marker_1', 'ar_marker_2', 'ar_marker_3',
+                                      'ar_marker_4', 'ar_marker_5', 'ar_marker_6',
+                                   'ar_marker_7', 'ar_marker_8']
+
+    self.compare_frame= 'ar_marker_6'
+    #self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
     self.ref_frame_name = 'reference/base'
     #frowny_face_image = cv2.imread('./images/frowny.jpeg')
@@ -42,7 +48,7 @@ class BlockLocaliser:
 
   def get_transform_between_frames(self, reference_frame, target_frame):
 
-    time_out = 10
+    time_out = 0.3
     start_time = time.time()
 
     while(True):
@@ -54,7 +60,7 @@ class BlockLocaliser:
         break
       except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
         if((time.time()- start_time) > time_out):
-          raise Exception('time-out: transformations not published as required')
+          return None
     transformation = [translation_vector, rotation_quaternions]
     if(transformation):
       print('got transformation')
@@ -163,18 +169,35 @@ class BlockLocaliser:
 
     # check if the order is correct and what you expect
     # camera_to_tag_transform = self.get_transform_between_frames(self.marker_frame_name, self.camera_frame_name)
-    camera_to_tag_transform = self.get_transform_between_frames(self.camera_frame_name, self.marker_frame_name)
-    print('got transform')
-    target_transform = self.get_transform_between_frames(self.ref_frame_name, self.marker_frame_name)
-    # pixel_values = [pixel_location[0], pixel_location[1]]
-    point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
-    filtered_points = []
-    for point in point_in_ar_frame:
-        #if point[0] < 0.235:
-        if point[1] > 0:
-            filtered_points.append([point[0], point[1], point[2]])
+    points_in_frames = {}
+    for marker_frame_name in self.all_marker_frame_name_list:
+        points_in_frames[marker_frame_name] = []
+    tag_camera_transfroms = {}
+    tag_base_transforms = {}
 
-    if not filtered_points:
+
+    for marker_frame_name in self.all_marker_frame_name_list:
+      camera_to_tag_transform = self.get_transform_between_frames(self.camera_frame_name, marker_frame_name)
+      tag_camera_transfroms[marker_frame_name] = camera_to_tag_transform
+      print('got transform')
+      target_transform = self.get_transform_between_frames(self.ref_frame_name, marker_frame_name)
+      if target_transform and camera_to_tag_transform:
+        print(target_transform)
+        tag_base_transforms[marker_frame_name] = target_transform
+        # pixel_values = [pixel_location[0], pixel_location[1]]
+        point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
+        points_in_frames[marker_frame_name] = point_in_ar_frame
+
+    points_in_frames_unfiltered = points_in_frames.copy()
+    compare_frame_points = points_in_frames[self.compare_frame]
+
+    blocks_to_remove = []
+    for index, point in enumerate(compare_frame_points):
+      if point[1] < 0:
+        blocks_to_remove.append(index)
+
+
+    if len(compare_frame_points) - len(blocks_to_remove) < 0:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
@@ -183,18 +206,45 @@ class BlockLocaliser:
 
       return block_pose
 
-    print(point_in_ar_frame)
-    index = random.randint(0, len(filtered_points)-1)
-    selected_point = np.array([filtered_points[index][0], filtered_points[index][1],
-                               filtered_points[index][2], 1])
-    print('selected_point', selected_point)
-    image_index = [np.array_equal(point_in_ar_frame[i], selected_point[:3]) for i in range(len(point_in_ar_frame))].index(True)
+    for frame_name, points in points_in_frames.items():
+      new_points = [point_in_ar.tolist() for point_index, point_in_ar in enumerate(points)
+                    if point_index not in blocks_to_remove]
+      points_in_frames[frame_name] = np.array(new_points)
+
+
+
+
+    # print(point_in_ar_frame)
+    selected_point_index = random.randint(0, len(points_in_frames[self.compare_frame])-1)
+    point_in_all_frames = []
+
+    for frame_name, points in points_in_frames.items():
+      if points.size:
+        point_in_ar_frame = points[selected_point_index] 
+        target_transform = tag_base_transforms[frame_name]
+        point_in_ar_frame_4d = np.array([point_in_ar_frame[0], point_in_ar_frame[1],
+                                         point_in_ar_frame[2], 1])
+
+        point_in_op_frame = self.transform_point(point_in_ar_frame_4d, target_transform) 
+        point_in_all_frames.append(point_in_op_frame)
+ 
+ 
+
+    point_in_all_frames = np.array(point_in_all_frames)
+    final_point = np.median(point_in_all_frames, axis=0)
+    selected_point_in_cmp_frame = points_in_frames[self.compare_frame][selected_point_index]
+
+
+    image_index = [np.array_equal(points_in_frames_unfiltered[self.compare_frame][i], 
+                                  selected_point_in_cmp_frame[:3]) 
+                                  for i in range(len(point_in_ar_frame))].index(True)
+
     self.send_target_block_image(image, image_index)
 
-    point_in_op_frame = self.transform_point(selected_point, target_transform) 
-    block_pose.x = point_in_op_frame[0]
-    block_pose.y = point_in_op_frame[1]
-    block_pose.theta = orientation[index]
+    point_in_op_frame = self.transform_point(final_point, target_transform) 
+    block_pose.x = final_point[0]
+    block_pose.y = final_point[1]
+    block_pose.theta = orientation[image_index]
     return block_pose
 
     
@@ -205,7 +255,7 @@ def main():
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
   
-  blocklocaliser.get_block_position('')
+  #blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
