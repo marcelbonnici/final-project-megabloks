@@ -1,4 +1,0 @@
-<launch>
-  <node name="add_server" pkg="blocks" type="add_numbers" />
-  <test test-name="test_tower" pkg="blocks" type="test_tower.py" />
-</launch>

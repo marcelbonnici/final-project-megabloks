@@ -1,9 +1,8 @@
 #! /usr/bin/env python
-
 import unittest
 import rospy
 
-class MyTestCase(unittest.TestCase):
+class TowerCase(unittest.TestCase):
     def test_param_loaded(self):
         tower = rospy.get_param('/tower', None)
         self.assertIsNotNone(tower)
@@ -11,4 +10,4 @@ class MyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     import rostest
-    rostest.rosrun('blocks', "test_tower", MyTestCase)
+    rostest.rosrun('blocks', 'test_tower', TowerCase)

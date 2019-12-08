@@ -169,7 +169,6 @@ install(PROGRAMS
    scripts/setup_blocks_hw
    scripts/setup_blocks_world
    scripts/test_find_block
-   scripts/test_tower.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -212,4 +211,8 @@ install(PROGRAMS
 # endif()
 
 ## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+#catkin_add_nosetests(tests)
+if(CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest(tests/tower_test.test)
+endif()
