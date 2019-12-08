@@ -6,6 +6,7 @@ import random
 import rospy
 import tf
 import numpy as np
+import rospkg
 
 from pixel_frame_transform import *
 from sensor_msgs.msg import Image
@@ -25,7 +26,12 @@ class BlockLocaliser:
     self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
     self.ref_frame_name = 'reference/base'
-    frowny_face_image = cv2.imread('./images/frowny.jpeg')
+    #frowny_face_image = cv2.imread('./images/frowny.jpeg')
+
+    rospack = rospkg.RosPack()
+    rospack.list() 
+    frowny_face_image = cv2.imread(rospack.get_path('blocks')+'/images/frowny.jpeg')
+
     self.bridge = CvBridge()
     self.frowny_face = self.bridge.cv2_to_imgmsg(frowny_face_image, encoding="passthrough")
     # self.camera_image_name = '/cameras/right_hand_camera/camera'
@@ -57,6 +63,8 @@ class BlockLocaliser:
 
   def get_all_block_poses(self, image):
     image = image.copy()
+    #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    #image = clahe.apply(image)
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
   
     lower_red = np.array([0,120,70], dtype = "uint8")
@@ -169,6 +177,7 @@ class BlockLocaliser:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
+      #print(type(self.frowny_face)
       self.head_display.publish(self.frowny_face)
 
       return block_pose
@@ -177,7 +186,9 @@ class BlockLocaliser:
     index = random.randint(0, len(filtered_points)-1)
     selected_point = np.array([filtered_points[index][0], filtered_points[index][1],
                                filtered_points[index][2], 1])
-    self.send_target_block_image(image, index)
+    print('selected_point', selected_point)
+    image_index = [np.array_equal(point_in_ar_frame, selected_point) for i in range(len(point_in_ar_frame))].index(True)
+    self.send_target_block_image(image, image_index)
 
     point_in_op_frame = self.transform_point(selected_point, target_transform) 
     block_pose.x = point_in_op_frame[0]
@@ -192,8 +203,12 @@ def main():
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
-  blocklocaliser.get_block_position('')
+  
+  #blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
-  main()
+   try:
+       main()
+   except rospy.ROSInterruptException:
+       pass

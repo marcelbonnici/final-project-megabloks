@@ -177,7 +177,7 @@ def main():
                                   'left_e1': 1.94,
                                   'left_s0': -0.08,
                                   'left_s1': -1.}
-    stp_left = setup(limb)
+    #stp_left = setup(limb)
 
     limb = 'right'
     # Starting Joint angles for right arm
@@ -188,7 +188,7 @@ def main():
                                    'right_e1': 1.94,
                                    'right_s0': -0.08,
                                    'right_s1': -1.}
-    stp_right = setup(limb)
+    #stp_right = setup(limb)
 
     # Note that the models reference is the /world frame
     # An orientation for gripper fingers to be overhead and parallel to the obj
@@ -213,7 +213,7 @@ def main():
     
     # Move to the desired starting angles
     #stp_left.move_to_start(starting_joint_angles_left)
-    stp_right.move_to_start(starting_joint_angles_right)
+    #stp_right.move_to_start(starting_joint_angles_right)
 
     rospy.spin()
 
