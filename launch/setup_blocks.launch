@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <rosparam command="load" file="$(find blocks)/config/tower.yaml"/>
+  <include file="$(find blocks)/launch/ar_track_baxter_cam.launch"/>
+  <node pkg="blocks" type="setup_blocks_hw" name="setup_blocks_hw"/>
+</launch>
