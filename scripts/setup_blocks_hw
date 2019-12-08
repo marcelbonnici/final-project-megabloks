@@ -3,6 +3,10 @@
 Set up configuration for hardware testing and moves arm to 'start' position
 
 inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+
++ Uses `baxter_interface` to verify that the robot is enabled
++ Uses `limb_interface` to control each arm with move_to_joint_positions
++ Uses `gripper_interface` to calibrate the gripper
 """
 
 import argparse
