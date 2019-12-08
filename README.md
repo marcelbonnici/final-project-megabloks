@@ -22,10 +22,11 @@
 	- `rosrun image_view image_view image:=/cameras/left_hand_camera/image` 
 	- can also sub in `right_hand_camera` or `head_camera` to view other two cameras
 	- simulation lets you view all 3 cameras at once even though you can only actually view two cameras at once on the real hardware
-- To enable or disable the cameras:
-	- `rosrun baxter_tools camera_control.py -o right_hand_camera'
-	-  can sub in `c` for `o` to close camera
-	- can sub in `left_hand*` or `head*` to control the other cameras
+- If cameras are acting up (or if you just turned baxter on), disable all cameras then enable right hand camera: 
+	- `rosrun baxter_tools camera_control.py -c right_hand_camera`
+	- `rosrun baxter_tools camera_control.py -c left_hand_camera`
+	- `rosrun baxter_tools camera_control.py -c head_camera`
+	- `rosrun baxter_tools camera_control.py -o right_hand_camera`
 ### Display Tools
 - To display a smiley face:
 	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/smiley.png`
