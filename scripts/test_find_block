@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 """
-New_find_block: enable the robot find the pick and place postion of blocks, and control the robot assembing the block
+New_find_block: robot use pick and place position to assemble the block
 
 PUBLISHERS:
   + /move_group/display_planned_path (moveit_msgs.msg.DisplayTrajectory) ~ publish the robot moving trajectory to control the robot motion
+
+SERVICE:
+  + /blocks/next_pickup (GetBlockPosition) ~ let the computer vision know when it is ready to get block positon, and read the block positon from computer vision.
 
 """
 import sys
@@ -53,13 +56,15 @@ class find_block(object):
         self.group = group
         self.group1 = group1
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
+        self._gripper.set_dead_band(0.5)
 
-    def get_location(self,model):
-        self.object_coords = self.model_coords(model,'')
-        x_pos = self.object_coords.pose.position.x
-        y_pos = self.object_coords.pose.position.y
-        z_pos = self.object_coords.pose.position.z
-        return [x_pos, y_pos, z_pos]
+
+    # def get_location(self,model):
+    #     self.object_coords = self.model_coords(model,'')
+    #     x_pos = self.object_coords.pose.position.x
+    #     y_pos = self.object_coords.pose.position.y
+    #     z_pos = self.object_coords.pose.position.z
+    #     return [x_pos, y_pos, z_pos]
 
     def go_to_pose_goal_1(self,position,orientation):
         group = self.group
@@ -114,6 +119,7 @@ class find_block(object):
         wpose = group.get_current_pose().pose
         wpose.position.z -= scale * 0.1  # First move up (z)
         waypoints.append(copy.deepcopy(wpose))
+        # group.set_max_velocity_scaling_factor(0.2)
         (plan, fraction) = group.compute_cartesian_path(
                                            waypoints,   # waypoints to follow
                                            0.01,        # eef_step
@@ -160,7 +166,7 @@ class find_block(object):
         waypoints = []
         # get current state
         y_distance = 0.4
-        x_distance = 0.2
+        x_distance = 0.15
         # find the difference between current state and x,y_direction
         wpose = group1.get_current_pose().pose
         wpose.position.y += scale * y_distance  # move towards right "-",
@@ -180,7 +186,7 @@ class find_block(object):
         waypoints = []
         # get current state
         y_distance = 0.4
-        x_distance = 0.2
+        x_distance = 0.15
         # find the difference between current state and x,y_direction
         wpose = group1.get_current_pose().pose
         wpose.position.y -= scale * y_distance  # move towards right "-",
@@ -324,9 +330,10 @@ class find_block(object):
 
 
     def pick_position_srv(self,sign):
-
+        gripper_offset_x = 0 #0.02
+        gripper_offset_y = 0 #0.01
         block_positions = self.model_coords()
-
+        print ("pick_position{}" .format(block_positions))
         if block_positions.block_pose.theta == 1:
             block_positions.block_pose.theta = -np.pi/2*sign
             sign *=-1
@@ -335,8 +342,8 @@ class find_block(object):
         print("orientation{}" .format(orientation))
 
         pose_goal = [[0,0,0],[0,0,0,0]]
-        pose_goal[0][0] = block_positions.block_pose.x
-        pose_goal[0][1] = block_positions.block_pose.y
+        pose_goal[0][0] = block_positions.block_pose.x + gripper_offset_x
+        pose_goal[0][1] = block_positions.block_pose.y + gripper_offset_y
         pose_goal[0][2] = self.pick_block_height
 
         pose_goal[1][0] = orientation[0]
@@ -348,11 +355,12 @@ class find_block(object):
 
 
     def get_place_position(self):
-        table_offset = 0.005
+        table_offset = 0
         # get block position x, y and rotation angle
         block_positions = rospy.get_param("tower")
-        sign = 1
+        sign = -1
 
+        x_offset = 0.1
         for i in range (len(block_positions)):
             if block_positions[i][2] == 1:
                 block_positions[i][2] = -np.pi/2*sign
@@ -371,17 +379,17 @@ class find_block(object):
         quaternion3 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position3[2]) # 1.57079632
 
         # print("quaternion1{}" .format(quaternion))
-        place_block_position1 = [[block_position1[0],block_position1[1],-0.20764+table_offset],[float(quaternion1[0]),float(quaternion1[1]),float(quaternion1[2]),float(quaternion1[3])]]
-        place_block_position2 = [[block_position2[0],block_position2[1],-0.20764+table_offset],[float(quaternion2[0]),float(quaternion2[1]),float(quaternion2[2]),float(quaternion2[3])]]
-        place_block_position3 = [[block_position3[0],block_position3[1],-0.20764+table_offset],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
+        place_block_position1 = [[block_position1[0]-x_offset,block_position1[1],-0.20764+table_offset],[float(quaternion1[0]),float(quaternion1[1]),float(quaternion1[2]),float(quaternion1[3])]]
+        place_block_position2 = [[block_position2[0]-x_offset,block_position2[1],-0.20764+table_offset],[float(quaternion2[0]),float(quaternion2[1]),float(quaternion2[2]),float(quaternion2[3])]]
+        place_block_position3 = [[block_position3[0]-x_offset,block_position3[1],-0.20764+table_offset],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
 
         return place_block_position1, place_block_position2, place_block_position3,sign
 
 
     def main(self):
-        table_offset = 0.005
-        self.pick_block_height = -0.2074+table_offset
-
+        table_offset = 0
+        # self.pick_block_height = -0.20764+table_offset
+        self.pick_block_height = -0.20764+table_offset
 
         place_block_position1,place_block_position2,place_block_position3,sign = self.get_place_position()
 
