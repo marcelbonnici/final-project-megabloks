@@ -6,53 +6,31 @@
 - Marcel Bonnici
 - Senthil Palanisamy
 
-## Capabilites:
-- Locate placed blocks
-- Build pyramid with 3 blocks to positions encoded in .yaml file
+## 1. Project Overview: 
+For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided by the user. The flow is: 
+1. Run setup file to get Baxter into position
+2. Human places blocks on tray
+3. Baxter detects location of a block (with right hand)
+4. Goal block is displayed to user on screen
+5. Baxter navigates to block, picks it up, and places it in the pyramid location (with left hand)
+6. Baxter repeats steps 3 and 4 until the pyramid is complete
 
-## Dependencies: 
+### Dependencies: 
 - This package uses the rethink_ws "package" provided via .rosinstall file from Matt
 - This package also uses a fork of "moveit_robots" 
 	- uri: git@github.com:apinosky/moveit_robots.git
 	- branch: melodic-devel
 
-## General Testing Tools: 
-### Camera Tools
-- To view a baxter camera while the robot or simulation is running 
-	- `rosrun image_view image_view image:=/cameras/left_hand_camera/image` 
-	- can also sub in `right_hand_camera` or `head_camera` to view other two cameras
-	- simulation lets you view all 3 cameras at once even though you can only actually view two cameras at once on the real hardware
-- If cameras are acting up (or if you just turned baxter on), disable all cameras then enable right hand camera: 
-	- `rosrun baxter_tools camera_control.py -c right_hand_camera`
-	- `rosrun baxter_tools camera_control.py -c left_hand_camera`
-	- `rosrun baxter_tools camera_control.py -c head_camera`
-	- `rosrun baxter_tools camera_control.py -o right_hand_camera`
-### Display Tools
-- To display a smiley face:
-	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/smiley.png`
-	- `rosrun baxter_examples xdisplay_image.py --file=`rospack find blocks`/images/frowny.jpeg`
-### Services
-- To get a location of a model in gazebo (if running the testing simulation): 
-	- `rosservice call /gazebo/get_model_state "model_name: 'block1'"` 
-	- can also sub in any other model for `block1`
-- To get the location of the of a block through the blocks service:
-	- `rosservice call /blocks/next_pickup`
-	- Returns the location of a detected block
-### Miscellaneous Robot Tools
-- To view coordinate transforms in the command line: 
-	- `rosrun tf tf_echo /l_gripper /torso`
-	- command above is of the form tf_echo <source_frame> <target_frame>
-	- According to baxter.srdf.xacro, the `left_arm` group should be from the `base_link = "torso"` to the `tip_link = "left_gripper"`
-	- NOTE: This value might not match RVIZ ... should explore more
-- To view workspace in RVIZ, check: 
-	- MotionPlanning > Planning Request > Show Workspace
-- To move the arms to a safe position (away from table), 
-	- `rosrun blocks safe_arms`
-- To view the current arm positions in joint coordinates:
-	- `rostopic echo /robot/joint_states`
-	- These can be used to update the positions in `setup_blocks_hw` 
+### ROS Packages and Libraries:
+- Computer Vision:
+	- AR Tags
+	- OpenCV
+	- OpenCV_bridge
+- Trajectory Planning: 
+	- MoveIt
+	- Joint Trajectory Action Server
 
-## Blocks Testing Tools:
+## 2. Guide:
 ### A. Dont forget to source: 
 `source setup/baxter.bash`
 - you can check the connection with `ping 10.42.0.2`
@@ -63,7 +41,7 @@
 	- Enables the robot 
 	- Moves the arms above the table (`safe_arms` position)
 	- Then it moves to the start position
-	- Also sets up cameras (TBR, currently commented out)
+	- Also sets up cameras 
 2. `roslaunch blocks load_tower.launch`
 	- Loads the block locations into the rosparam list
 3. `roslaunch blocks ar_track_baxter_cam.launch`
@@ -83,3 +61,19 @@
 	- Run this when you're done :)
 3. `rosrun baxter_tools enable_robot.py -d`
 	- Disable the robot
+
+## 3. List of all nodes and launchfiles and what they do
+
+## 4. System Architecture
+1. Setup baxter
+	- Enable the robot
+	- Move to start position
+	- Enable camera
+	- Enable computer_vision service
+	- Load tower 'place' positions
+2. Setup MoveIt (done separately from #1 becasue MoveIt configuration prevents moving to specific joint angles using the limb_interface. also, these steps must be run sequentially)
+	1. Run Joint Trajectory Action Server
+	2. Enable baxter grippers configuration
+3. Run core `find_blocks` function
+	- This function can be run many times without running steps 1 and 2
+	- It calls the AR service, to them them know when to find the block. This controls the flow of the program 
