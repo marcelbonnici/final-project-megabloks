@@ -25,7 +25,7 @@ class BlockLocaliser:
     # self.K = np.array([406.688830, 0.000000, 653.829535, 0.000000, 405.951986, 423.000525, 0.000000, 0.000000, 1.000000]).reshape(3, 3)
     self.K = np.array([412.472805, 0.000000, 656.708584, 0.000000, 412.891416, 418.279946, 0.000000, 0.000000, 1.000000]).reshape(3, 3)
     self.listener = tf.TransformListener()
-    
+
     self.all_marker_frame_name_list = ['ar_marker_1', 'ar_marker_2', 'ar_marker_3',
                                       'ar_marker_4', 'ar_marker_5', 'ar_marker_6',
                                    'ar_marker_7', 'ar_marker_8']
@@ -33,11 +33,12 @@ class BlockLocaliser:
     self.compare_frame= 'ar_marker_6'
     #self.marker_frame_name = 'ar_marker_6'
     self.camera_frame_name = 'reference/right_hand_camera'
-    self.ref_frame_name = 'reference/base'
+    #self.ref_frame_name = 'reference/base'
+    self.ref_frame_name = 'world'
     #frowny_face_image = cv2.imread('./images/frowny.jpeg')
 
     rospack = rospkg.RosPack()
-    rospack.list() 
+    rospack.list()
     frowny_face_image = cv2.imread(rospack.get_path('blocks')+'/images/frowny.jpeg')
 
     self.bridge = CvBridge()
@@ -56,8 +57,8 @@ class BlockLocaliser:
     while(True):
       try:
         translation_vector, rotation_quaternions = self.listener.lookupTransform(
-                                                  reference_frame, 
-                                                  target_frame, 
+                                                  reference_frame,
+                                                  target_frame,
                                                   rospy.Time(0))
         break
       except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -74,32 +75,32 @@ class BlockLocaliser:
     #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     #image = clahe.apply(image)
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
-  
+
     lower_red = np.array([0,120,70], dtype = "uint8")
     upper_red = np.array([10,255,255], dtype = "uint8")
-  
+
     mask1 = cv2.inRange(hsv, lower_red, upper_red)
     output = cv2.bitwise_and(image, image, mask = mask1)
-  
-  
+
+
     lower_red = np.array([170,120,70], dtype = "uint8")
     upper_red = np.array([180,255,255], dtype = "uint8")
-  
+
     mask2 = cv2.inRange(hsv, lower_red, upper_red)
     output = cv2.bitwise_and(image, image, mask = mask2)
-  
+
     mask = mask1 + mask2
-  
+
     im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE) 
-    expected_area = 400
+                                                cv2.CHAIN_APPROX_SIMPLE)
+    expected_area = 4000
     alpha = 0.8
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
-  
+
     if not filtered_contours:
       return [np.array([[-1], [-1]]), 0]
-  
+
     selected_points = []
     x_points, y_points = [], []
     orientations = []
@@ -132,11 +133,11 @@ class BlockLocaliser:
     #cv2.imshow('image', image)
     #cv2.waitKey(0)
 
-    return selected_points, orientations 
+    return selected_points, orientations
 
   def send_target_block_image(self, image, index):
-    image = image.copy()  
-    x1, y1, x2, y2 = self.all_blocks[index] 
+    image = image.copy()
+    x1, y1, x2, y2 = self.all_blocks[index]
     cv2.rectangle(image,(x1,y1),(x2,y2),(0,255,0),10)
     # display resolution of baxter screen
     display_width, display_height =1024, 600
@@ -150,11 +151,11 @@ class BlockLocaliser:
   def transform_point(self, point, transformation):
 
     translation_vector, rotation_quaternions = transformation
-    transformation_matrix = tf.transformations.quaternion_matrix(rotation_quaternions) 
+    transformation_matrix = tf.transformations.quaternion_matrix(rotation_quaternions)
     transformation_matrix[:3, 3] = translation_vector
     point_in_target_frame = transformation_matrix.dot(point)
     return point_in_target_frame
-  
+
   def get_block_position(self, data):
 
     image_in = rospy.wait_for_message(self.camera_image_name, Image)
@@ -187,7 +188,7 @@ class BlockLocaliser:
         print(target_transform)
         tag_base_transforms[marker_frame_name] = target_transform
         # pixel_values = [pixel_location[0], pixel_location[1]]
-        point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
+        point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)
         points_in_frames[marker_frame_name] = point_in_ar_frame
 
     points_in_frames_unfiltered = points_in_frames.copy()
@@ -222,41 +223,41 @@ class BlockLocaliser:
 
     for frame_name, points in points_in_frames.items():
       if points.size:
-        point_in_ar_frame = points[selected_point_index] 
+        point_in_ar_frame = points[selected_point_index]
         target_transform = tag_base_transforms[frame_name]
         point_in_ar_frame_4d = np.array([point_in_ar_frame[0], point_in_ar_frame[1],
                                          point_in_ar_frame[2], 1])
 
-        point_in_op_frame = self.transform_point(point_in_ar_frame_4d, target_transform) 
+        point_in_op_frame = self.transform_point(point_in_ar_frame_4d, target_transform)
         point_in_all_frames.append(point_in_op_frame)
- 
- 
+
+
 
     point_in_all_frames = np.array(point_in_all_frames)
     final_point = np.median(point_in_all_frames, axis=0)
     selected_point_in_cmp_frame = points_in_frames[self.compare_frame][selected_point_index]
 
 
-    image_index = [np.array_equal(points_in_frames_unfiltered[self.compare_frame][i], 
-                                  selected_point_in_cmp_frame[:3]) 
-                                  for i in range(len(point_in_ar_frame))].index(True)
+    image_index = [np.array_equal(points_in_frames_unfiltered[self.compare_frame][i],
+                                  selected_point_in_cmp_frame[:3])
+                                  for i in range(len(points_in_frames_unfiltered[self.compare_frame]))].index(True)
 
     self.send_target_block_image(image, image_index)
 
-    point_in_op_frame = self.transform_point(final_point, target_transform) 
+    point_in_op_frame = self.transform_point(final_point, target_transform)
     block_pose.x = final_point[0]
     block_pose.y = final_point[1]
     block_pose.theta = orientation[image_index]
     return block_pose
 
-    
+
 
 
 def main():
   # pixel_location = get_block_from_images(image)
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
-  
+
   #blocklocaliser.get_block_position('')
   rospy.spin()
 
