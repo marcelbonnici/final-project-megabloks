@@ -63,6 +63,8 @@ class BlockLocaliser:
 
   def get_all_block_poses(self, image):
     image = image.copy()
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    image = clahe.apply(image)
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
   
     lower_red = np.array([0,120,70], dtype = "uint8")
@@ -82,7 +84,7 @@ class BlockLocaliser:
   
     im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,
                                                 cv2.CHAIN_APPROX_SIMPLE) 
-    expected_area = 4000
+    expected_area = 400
     alpha = 0.8
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
@@ -164,9 +166,8 @@ class BlockLocaliser:
     camera_to_tag_transform = self.get_transform_between_frames(self.camera_frame_name, self.marker_frame_name)
     print('got transform')
     target_transform = self.get_transform_between_frames(self.ref_frame_name, self.marker_frame_name)
-    # pixel_values = [pixel_location[0], pixel_location[1]]
     point_in_ar_frame = transform_pixel_to_any_frame(pixel_values, camera_to_tag_transform, self.K)  
-    filtered_points = []
+
     for point in point_in_ar_frame:
         if point[0] < 0.235:
             filtered_points.append([point[0], point[1], point[2]])
@@ -175,7 +176,6 @@ class BlockLocaliser:
       block_pose.x = -1000
       block_pose.y = -1000
       block_pose.theta = -1000
-      #print(type(self.frowny_face)
       self.head_display.publish(self.frowny_face)
 
       return block_pose
@@ -184,7 +184,9 @@ class BlockLocaliser:
     index = random.randint(0, len(filtered_points)-1)
     selected_point = np.array([filtered_points[index][0], filtered_points[index][1],
                                filtered_points[index][2], 1])
-    self.send_target_block_image(image, index)
+    print('selected_point', selected_point)
+    image_index = [np.array_equal(point_in_ar_frame, selected_point) for i in range(len(point_in_ar_frame))].index(True)
+    self.send_target_block_image(image, image_index)
 
     point_in_op_frame = self.transform_point(selected_point, target_transform) 
     block_pose.x = point_in_op_frame[0]
