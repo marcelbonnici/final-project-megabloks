@@ -21,7 +21,9 @@ class BlockLocaliser:
   def __init__(self):
     camera_info = rospy.wait_for_message('/cameras/right_hand_camera/camera_info', CameraInfo)
     rospy.Service('/blocks/next_pickup', GetBlockPosition, self.get_block_position)
-    self.K = np.array(camera_info.K).reshape(3,3)
+    #self.K = np.array(camera_info.K).reshape(3,3)
+    # self.K = np.array([406.688830, 0.000000, 653.829535, 0.000000, 405.951986, 423.000525, 0.000000, 0.000000, 1.000000]).reshape(3, 3)
+    self.K = np.array([412.472805, 0.000000, 656.708584, 0.000000, 412.891416, 418.279946, 0.000000, 0.000000, 1.000000]).reshape(3, 3)
     self.listener = tf.TransformListener()
     
     self.all_marker_frame_name_list = ['ar_marker_1', 'ar_marker_2', 'ar_marker_3',
