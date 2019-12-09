@@ -7,15 +7,15 @@ Legend:-
 
 High level Plan (High level Milstones):-
 
-1. [] Play around with isolated parts of the
+1. [x] Play around with isolated parts of the
       project and figure out how the project can
       be accomplished                              - 5d     -21/11 to 25/11
-2. [] Integrate isolated parts and have atleast
+2. [x] Integrate isolated parts and have atleast
       a very simple and basic version of the 
       problem running                              - 3d    - 26/11 to 29/12
-3. [] Refine and improve and adapt it to fit 
+3. [-] Refine and improve and adapt it to fit 
       the whole problem                            - 5d    - 30/12 to 4/12
-4. [] Make it robust and thorough test the sytem   - 3d    - 5/12 to 7/12
+4. [] Make it robust and thorough test the system  - 3d    - 5/12 to 7/12
 5. [] Buffer                                       - 2d    - 7/12 to 8/12 
 6. [] Finish Report                                - 3d    - 9/12 to 11/12
 
@@ -42,14 +42,14 @@ Task deliverables for Milestone-1 (21/11 to 25/11):-
 
 
 Task deliverables for Milestone-1 (26/11 to 29/11):-
-1. [] Allie and Luxi - Write node / nodes for trajectory planning and execution
-2. [] Marcel - Write a node for gripper control and pushing down blocks 
+1. [x] Allie and Luxi - Write node / nodes for trajectory planning and execution
+2. [x] Marcel - Write a node for gripper control and pushing down blocks 
                for clippping against blocks
-3. [] Senthil - Write a node for computer vision. The camera should be both
+3. [x] Senthil - Write a node for computer vision. The camera should be both
                 intrinsically and extrinsically calibrated and blocks should
                 be detected and the location and orientation (x,y, theta) of
                 the block should be given out by the node
-4. [] All - Integrate all code and get a simple version of the whole project
+4. [x] All - Integrate all code and get a simple version of the whole project
             running.
 
 
