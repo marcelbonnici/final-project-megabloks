@@ -3,6 +3,8 @@
 Spawns dummy configuration for testing and moves arm to 'start' position
 
 inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+
+NOTE: does not spawn AR tags, so computer vision will not work in simulation
 """
 
 import argparse

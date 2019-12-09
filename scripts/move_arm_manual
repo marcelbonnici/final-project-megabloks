@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """
-Moves gripper to random manually input positions for testing 
+Moves gripper to random manually input positions for testing
+
++ Uses `baxter_interface` to verify that the robot is enabled
++ Uses `limb_interface` to control each arm with move_to_joint_positions
++ Uses `gripper_interface` to calibrate the gripper
+
 """
 
 import sys

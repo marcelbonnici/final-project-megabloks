@@ -3,6 +3,10 @@
 Set up configuration for hardware testing and moves arm to 'start' position
 
 inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+
++ Uses `baxter_interface` to verify that the robot is enabled
++ Uses `limb_interface` to control each arm with move_to_joint_positions
++ Uses `gripper_interface` to calibrate the gripper
 """
 
 import argparse
@@ -61,15 +65,16 @@ class setup_arm(object):
         rospy.sleep(1.0)
 
 
-def open_cam(camera, res):
 
-  if not any((res[0] == r[0] and res[1] == r[1]) for r in CameraController.MODES):
+def open_cam(camera, resolution):
+  is_resolution_valid = any((resolution[0] == r[0] and resolution[1] == r[1]) for r in CameraController.MODES)
+
+  if not is_resolution_valid: 
     rospy.logerr("Invalid resolution provided.")
     # Open camera
-    cam = CameraController(camera) # Create camera object
-    cam.resolution = res # Set resolution
-    cam.open() # open
-    # Close camera
+  cam = CameraController(camera) # Create camera object
+  cam.resolution = resolution # Set resolution
+  cam.open() # open
 
 def close_cam(camera):
   cam = CameraController(camera) # Create camera object
@@ -102,17 +107,17 @@ def main():
                                   'left_w2': -0.5,
                                   'left_e0': -1.19,
                                   'left_e1': 1.94,
-                                  'left_s0': .2, #-0.08,
+                                  'left_s0': .45, # .2, #-0.08,
                                   'left_s1': -1.}
     
     # Starting Joint angles for right arm
-    starting_joint_angles_right = {'right_w0': 2.71, #2.74,  #0.85,
-                                   'right_w1': -0.77, #-1.09,  #1.52,
-                                   'right_w2': -2.33, #-2.71,   #0.05,
-                                   'right_e0': 0.39, #0.36,   #-0.99,
-                                   'right_e1': 1.75, #0.97,   #0.80,
-                                   'right_s0': 0.95, #0.95,   #1.46,
-                                   'right_s1': -0.93} #-0.5}  #-0.46}
+    starting_joint_angles_right = {'right_w0': 0.07, #-0.12,#2.71, #2.74,  #0.85,
+                                   'right_w1': 1.25, #1.25, #-0.77, #-1.09,  #1.52,
+                                   'right_w2': 0.52, #0.61, #-2.33, #-2.71,   #0.05,
+                                   'right_e0': -.04, #0.10, #0.39, #0.36,   #-0.99,
+                                   'right_e1': 1.00, #0.86, #1.75, #0.97,   #0.80,
+                                   'right_s0': 1.38, #1.37, #0.95, #0.95,   #1.46,
+                                   'right_s1': -0.60}#-0.54}#-0.93} #-0.5}  #-0.46}
     stp_left = setup_arm('left')  
     stp_right = setup_arm('right')
 
@@ -125,19 +130,10 @@ def main():
     stp_right.move_to_start(starting_joint_angles_right)
 
     # set up cameras
-    #try:
-    #    close_cam('left_hand_camera')
-    #except:
-    #    pass
-    #try:
-    #    close_cam('right_hand_camera')
-    #except:
-    #    pass
-    #try:
-    #    close_cam('head_camera')
-    #except:
-    #    pass
-    #open_cam('right_hand_camera',(1280,800))
+    close_cam('left_hand_camera')
+    close_cam('right_hand_camera')
+    close_cam('head_camera')
+    open_cam('right_hand_camera',(1280,800))
     
     print("Ready!")
     rospy.spin()

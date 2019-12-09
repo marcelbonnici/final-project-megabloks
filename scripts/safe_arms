@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """
-Set up configuration for hardware testing and moves arm to 'safe' position
+Moves arm to 'safe' position
 
-inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+Inspired by `ik_pick_and_place_demo.py` -- Baxter RSDK Inverse Kinematics Pick and Place Demo by Rethink Robotics
+
++ Uses `baxter_interface` to verify that the robot is enabled 
++ Uses `limb_interface` to control each arm with move_to_joint_positions
 """
 
 import argparse
