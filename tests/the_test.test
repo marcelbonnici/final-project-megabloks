@@ -1,0 +1,4 @@
+<launch>
+<rosparam file="$(find blocks)/config/tower.yaml" command="load" />
+<test test-name="test_the" pkg="blocks" type="test_the.py" />
+</launch>

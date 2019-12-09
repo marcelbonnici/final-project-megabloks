@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   message_runtime
   rospy
+  rosunit
   std_msgs
 )
 
@@ -58,6 +59,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  TwoResult.srv
   GetBlockPosition.srv
 )
 
@@ -162,6 +164,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
+   scripts/add_numbers
    scripts/computer_vision.py
    scripts/move_arm_manual
    scripts/new_find_block
@@ -169,6 +172,7 @@ install(PROGRAMS
    scripts/setup_blocks_hw
    scripts/setup_blocks_world
    scripts/test_find_block
+   src/blocks/hardmath.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -211,8 +215,10 @@ install(PROGRAMS
 # endif()
 
 ## Add folders to be run by python nosetests
-#catkin_add_nosetests(tests)
+# catkin_add_nosetests(tests)
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    add_rostest(tests/tower_test.test)
+    add_rostest(tests/the_test.test)
+    #add_rostest(tests/desperation.test)
+    # add_rostest(tests/tower_test.test)
 endif()
