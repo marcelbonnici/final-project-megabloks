@@ -56,7 +56,7 @@ class find_block(object):
         self.group = group
         self.group1 = group1
         self._gripper = baxter_interface.Gripper("left", baxter_interface.CHECK_VERSION)
-        self._gripper.set_dead_band(0.5)
+        self._gripper.set_dead_band(0.25)
 
 
     # def get_location(self,model):
@@ -86,10 +86,23 @@ class find_block(object):
     def go_to_pose_goal_2(self,orientation):
         group = self.group
         pose_goal = group.get_current_pose().pose
-        pose_goal.orientation.x = orientation[0]
-        pose_goal.orientation.y = orientation[1]
-        pose_goal.orientation.z = orientation[2]
-        pose_goal.orientation.w = orientation[3]
+
+        get_orientation = np.array([pose_goal.orientation.x,pose_goal.orientation.y,pose_goal.orientation.z,pose_goal.orientation.w])
+        current_orientation = tf.transformations.euler_from_quaternion(get_orientation) # 1.57079632
+        if current_orientation[1] < 0:
+            sign = -1
+        else:
+            sign = 1
+
+        quaternion = tf.transformations.quaternion_from_euler(-np.pi,0,orientation[0]*sign) # 1.57079632
+        pose_goal.orientation.x = quaternion[0]
+        pose_goal.orientation.y = quaternion[1]
+        pose_goal.orientation.z = quaternion[2]
+        pose_goal.orientation.w = quaternion[3]
+        # pose_goal.orientation.x = orientation[0]
+        # pose_goal.orientation.y = orientation[1]
+        # pose_goal.orientation.z = orientation[2]
+        # pose_goal.orientation.w = orientation[3]
         group.set_pose_target(pose_goal)
 
         plan = group.go(wait=True)
@@ -239,10 +252,10 @@ class find_block(object):
 
         if reset == 1:
             a = 10.0
-            holdforce = 30.0
+            holdforce = 40.0
         else:
             a = current_force + offset
-            holdforce = 40.0
+            holdforce = 50.0
 
         self._gripper.set_holding_force(holdforce)
         self._gripper.set_moving_force(a)
@@ -261,36 +274,43 @@ class find_block(object):
         raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_5(scale=-1)
         self.execute_plan1(cartesian_plan)
-        print "============ Press `Enter` to go above pick position ..."
-        raw_input()
+        # print "============ Press `Enter` to go above pick position ..."
+        # raw_input()
+        rospy.sleep(2)
         self.force_control(1)
         pick_position1 = copy.copy(pick_block_position[0])
         pick_position1[2] = pick_position1[2]+0.1
         pick_orientation_1 = copy.copy(pick_block_position[1])
         self.go_to_pose_goal_1(pick_position1,pick_orientation_1)
-        print "============ Press `Enter` to go down ..."
-        raw_input()
+        # print "============ Press `Enter` to go down ..."
+        # raw_input()
+        rospy.sleep(2)
         cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to close gripper  ..."
-        raw_input()
+        # print "============ Press `Enter` to close gripper  ..."
+        # raw_input()
+        rospy.sleep(2)
         self.gripper_close()
-        print "============ Press `Enter` to go up ..."
-        raw_input()
+        rospy.sleep(2)
+        # print "============ Press `Enter` to go up ..."
+        # raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to go x and y position tarward the position to drop box..."
-        raw_input()
+        rospy.sleep(2)
+        # print "============ Press `Enter` to go x and y position tarward the position to drop box..."
+        # raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_3(place_block_position, scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to go above place position ..."
-        raw_input()
+        rospy.sleep(1)
+        # print "============ Press `Enter` to go above place position ..."
+        # raw_input()
         place_orientation_1 = copy.copy(place_block_position[1])
         self.go_to_pose_goal_2(place_orientation_1)
 
 
-        print "============ Press `Enter` to go vertical  and add force..."
-        raw_input()
+        # print "============ Press `Enter` to go vertical  and add force..."
+        # raw_input()
+        rospy.sleep(3)
         self.force_control(0)
         cartesian_plan, fraction = self.plan_cartesian_path_4(place_block_position,scale=-1)
         self.execute_plan(cartesian_plan)
@@ -298,16 +318,19 @@ class find_block(object):
         self.force_control(1)
         rospy.sleep(5)
         self.gripper_open()
-        print "============ Press `Enter` to go up.."
-        raw_input()
+        # print "============ Press `Enter` to go up.."
+        # raw_input()
+        rospy.sleep(2)
         cartesian_plan, fraction = self.plan_cartesian_path_2(scale=-1)
         self.execute_plan(cartesian_plan)
-        print "============ Press `Enter` to close gripper  ..."
-        raw_input()
+        rospy.sleep(2)
+        # print "============ Press `Enter` to close gripper  ..."
+        # raw_input()
         self.gripper_close()
         self.force_control(0)
-        print "============ Press `Enter` to go down ..."
-        raw_input()
+        rospy.sleep(2)
+        # print "============ Press `Enter` to go down ..."
+        # raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_1(scale=-1)
         self.execute_plan(cartesian_plan)
         rospy.sleep(5)
@@ -317,22 +340,28 @@ class find_block(object):
         self.execute_plan(cartesian_plan)
         self.force_control(1)
         self.gripper_open()
-        print "============ Press `Enter` to move away left arm..."
-        raw_input()
+        # print "============ Press `Enter` to move away left arm..."
+        # raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_7(scale=-1)
         self.execute_plan(cartesian_plan)
 
-        print "============ Press `Enter` to move right arm back..."
-        raw_input()
+        # print "============ Press `Enter` to move right arm back..."
+        # raw_input()
         cartesian_plan, fraction = self.plan_cartesian_path_6(scale=-1)
         self.execute_plan1(cartesian_plan)
-
+        rospy.sleep(3)
 
 
     def pick_position_srv(self,sign):
         gripper_offset_x = 0 #0.02
-        gripper_offset_y = 0 #0.01
-        block_positions = self.model_coords()
+        gripper_offset_y = -0.006 #0.01
+
+        check = 0
+        while check == 0:
+            block_positions = self.model_coords()
+            if block_positions.block_pose.x < 0.65:
+                check = 1
+
         print ("pick_position{}" .format(block_positions))
         if block_positions.block_pose.theta == 1:
             block_positions.block_pose.theta = -np.pi/2*sign
@@ -355,16 +384,16 @@ class find_block(object):
 
 
     def get_place_position(self):
-        table_offset = 0
+        table_offset = -0.0002
         # get block position x, y and rotation angle
         block_positions = rospy.get_param("tower")
-        sign = -1
+        sign = 1
 
-        x_offset = 0.1
+        x_offset = 0.11
         for i in range (len(block_positions)):
             if block_positions[i][2] == 1:
-                block_positions[i][2] = -np.pi/2*sign
-                sign *=-1
+                block_positions[i][2] = np.pi/2 #*sign
+                #sign *=-1
 
         block_position1 = block_positions[0]
         block_position2 = block_positions[1]
@@ -374,20 +403,22 @@ class find_block(object):
         print("block_position2{}" .format(block_position2))
         print("block_position3{}" .format(block_position3))
 
-        quaternion1 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position1[2]) # 1.57079632
-        quaternion2 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position2[2]) # 1.57079632
-        quaternion3 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position3[2]) # 1.57079632
+        # quaternion1 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position1[2]) # 1.57079632
+        # quaternion2 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position2[2]) # 1.57079632
+        # quaternion3 = tf.transformations.quaternion_from_euler(-np.pi,0,block_position3[2]) # 1.57079632
 
         # print("quaternion1{}" .format(quaternion))
-        place_block_position1 = [[block_position1[0]-x_offset,block_position1[1],-0.20764+table_offset],[float(quaternion1[0]),float(quaternion1[1]),float(quaternion1[2]),float(quaternion1[3])]]
-        place_block_position2 = [[block_position2[0]-x_offset,block_position2[1],-0.20764+table_offset],[float(quaternion2[0]),float(quaternion2[1]),float(quaternion2[2]),float(quaternion2[3])]]
-        place_block_position3 = [[block_position3[0]-x_offset,block_position3[1],-0.20764+table_offset],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
+        # place_block_position1 = [[block_position1[0]-x_offset,block_position1[1],-0.20764+table_offset],[float(quaternion1[0]),float(quaternion1[1]),float(quaternion1[2]),float(quaternion1[3])]]
+        # place_block_position2 = [[block_position2[0]-x_offset-0.01,block_position2[1],-0.20764+table_offset],[float(quaternion2[0]),float(quaternion2[1]),float(quaternion2[2]),float(quaternion2[3])]]
+        # place_block_position3 = [[block_position3[0]-x_offset,block_position3[1],-0.20764+table_offset+0.02],[float(quaternion3[0]),float(quaternion3[1]),float(quaternion3[2]),float(quaternion3[3])]]
+        place_block_position1 = [[block_position1[0]-x_offset+0.002-0.0003,block_position1[1],-0.20764+table_offset],[block_position1[2]]]
+        place_block_position2 = [[block_position2[0]-x_offset-0.003,block_position2[1],-0.20764+table_offset],[block_position2[2]]]
+        place_block_position3 = [[block_position3[0]-x_offset+0.002,block_position3[1],-0.20764+table_offset+0.015],[block_position3[2]]]
 
         return place_block_position1, place_block_position2, place_block_position3,sign
 
-
     def main(self):
-        table_offset = 0
+        table_offset = -0.005
         # self.pick_block_height = -0.20764+table_offset
         self.pick_block_height = -0.20764+table_offset
 
@@ -395,14 +426,17 @@ class find_block(object):
 
         print "============ go to the first block postion..."
         sign,pick_position = self.pick_position_srv(sign)
+        rospy.sleep(2)
         self.pick_and_place(pick_position, place_block_position1)
 
         print "============ go to the first block postion..."
         sign,pick_position = self.pick_position_srv(sign)
+        rospy.sleep(2)
         self.pick_and_place(pick_position, place_block_position2)
 
         print "============ go to the first block postion..."
         sign,pick_position = self.pick_position_srv(sign)
+        rospy.sleep(2)
         self.pick_and_place(pick_position, place_block_position3)
 
 

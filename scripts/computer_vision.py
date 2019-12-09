@@ -31,7 +31,7 @@ class BlockLocaliser:
                                    'ar_marker_7', 'ar_marker_8']
 
     self.compare_frame= 'ar_marker_6'
-    #self.marker_frame_name = 'ar_marker_6'
+    #self.marker_frame_name = 'ar_marker_2'
     self.camera_frame_name = 'reference/right_hand_camera'
     #self.ref_frame_name = 'reference/base'
     self.ref_frame_name = 'world'
@@ -77,13 +77,13 @@ class BlockLocaliser:
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
 
     lower_red = np.array([0,120,70], dtype = "uint8")
-    upper_red = np.array([10,255,255], dtype = "uint8")
+    upper_red = np.array([30,255,255], dtype = "uint8")
 
     mask1 = cv2.inRange(hsv, lower_red, upper_red)
     output = cv2.bitwise_and(image, image, mask = mask1)
 
 
-    lower_red = np.array([170,120,70], dtype = "uint8")
+    lower_red = np.array([160,120,70], dtype = "uint8")
     upper_red = np.array([180,255,255], dtype = "uint8")
 
     mask2 = cv2.inRange(hsv, lower_red, upper_red)
@@ -93,7 +93,7 @@ class BlockLocaliser:
 
     im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,
                                                 cv2.CHAIN_APPROX_SIMPLE)
-    expected_area = 4000
+    expected_area = 3000
     alpha = 0.8
     minimum_area = alpha * expected_area
     filtered_contours = filter(lambda x:cv2.contourArea(x) > minimum_area, contours)
@@ -196,7 +196,7 @@ class BlockLocaliser:
 
     blocks_to_remove = []
     for index, point in enumerate(compare_frame_points):
-      if point[1] < 0:
+      if point[1] < 0.02:
         blocks_to_remove.append(index)
 
 
@@ -258,7 +258,7 @@ def main():
   rospy.init_node('computer_vision')
   blocklocaliser = BlockLocaliser()
 
-  #blocklocaliser.get_block_position('')
+  blocklocaliser.get_block_position('')
   rospy.spin()
 
 if __name__=='__main__':
