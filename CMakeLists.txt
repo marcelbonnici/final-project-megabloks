@@ -164,7 +164,6 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-   scripts/add_numbers
    scripts/computer_vision.py
    scripts/move_arm_manual
    scripts/new_find_block
@@ -172,7 +171,6 @@ install(PROGRAMS
    scripts/setup_blocks_hw
    scripts/setup_blocks_world
    scripts/test_find_block
-   src/blocks/hardmath.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -219,6 +217,4 @@ install(PROGRAMS
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     add_rostest(tests/the_test.test)
-    #add_rostest(tests/desperation.test)
-    # add_rostest(tests/tower_test.test)
 endif()
