@@ -1,6 +1,3 @@
 tower: [[0.7988,0.1759, 0], #Block 1 x,y,phi
         [0.765, 0.1759, 0], #Block 2 x,y,phi
         [0.78635,0.17779, 1]] #Block 3 x,y,phi
-
-# Add to new_find_block's __init__
-# self.tower = rospy.get_param("tower")
