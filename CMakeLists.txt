@@ -216,6 +216,6 @@ install(PROGRAMS
 # catkin_add_nosetests(tests)
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    add_rostest(tests/the_test.test)
+    add_rostest(tests/tower_test.test)
     add_rostest(tests/all_test.test)
 endif()
