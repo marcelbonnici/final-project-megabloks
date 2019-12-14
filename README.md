@@ -69,6 +69,16 @@ For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided
 ### Nodes
 - `computer_vision.py`
 	- Uses the robot's right hand to observe the baseplate, spot a red brick and determine its position for pickup
+    Detects all AR frames visible in the camera's field of view. Then pre-calibrated intrinsic camera parameters 
+    are used to do inverse projection to get the 3D location of a point corresponding to a pixel location.
+    The 3D point corresponding to the pixel is determined in multiple AR frames and then these points
+    are converted to the baxter world frame representation. Then we get muliple points in world frame that
+    correspond to the same pixel but obtained using different AR frames as reference. The median of all
+    those points is found out and that point is taken to be the true 3D location corresponding to a pixel in 
+    the image. Reason why we use multiple AR frames when one should be sufficient in theory - Sometimes AR tags 
+    are affected by lighting and their 3D pose with respect to the camera oscillates. Even worse sometimes, they
+    are not detected. Using multiple AR tags this way increases both the roboustness and the precision of the system.
+    We were able to locate points within +/- 1 cm accuracy with this process.
 - `move_arm_manual`
 	- Moves gripper to random manually input positions for testing
 - `new_find_block`
