@@ -24,8 +24,9 @@ import rospkg
 from sensor_msgs.msg import CameraInfo, Image
 from geometry_msgs.msg import Pose2D
 from blocks.srv import GetBlockPosition
+from cv_bridge import CvBridge, CvBridgeError
 
-from blocks import pixel_frame_transform
+
 from pixel_frame_transform import *
 
 class BlockLocaliser:
@@ -47,7 +48,7 @@ class BlockLocaliser:
     # The list of all ar_markers visible in the camera's field of field
     # compare frame is the ar marker with respect to which a few algorithmic
     # workspace to pick up the block from are designed.
-    self.all_marker_frame_name_list = ['ar_marker_1', 'ar_marker_2', 
+    self.all_marker_frame_name_list = ['ar_marker_0', 'ar_marker_1', 'ar_marker_2', 
                                        'ar_marker_3', 'ar_marker_4', 
                                        'ar_marker_5', 'ar_marker_6',
                                        'ar_marker_7', 'ar_marker_8']
@@ -69,6 +70,7 @@ class BlockLocaliser:
                                         Image, queue_size = 1)
     self.head_display = rospy.Publisher("/robot/xdisplay", 
                                         Image, queue_size = 1)
+    self.ref_frame_name = 'world'
 
 
   def get_transform_between_frames(self, reference_frame, target_frame):
