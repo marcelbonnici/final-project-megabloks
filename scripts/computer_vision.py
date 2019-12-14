@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Author: Senthil Palanisamy
 '''
 This node does all the computer vision part of the project. The list of
 activities preformed by this node are
@@ -24,7 +25,8 @@ from sensor_msgs.msg import CameraInfo, Image
 from geometry_msgs.msg import Pose2D
 from blocks.srv import GetBlockPosition
 
-from pixel_frame_transform import *
+from blocks import pixel_frame_transform
+from blocks.pixel_frame_transform import *
 
 class BlockLocaliser:
   '''
@@ -304,7 +306,7 @@ class BlockLocaliser:
     # as the position to pick up the block from
     point_in_all_frames = np.array(point_in_all_frames)
     final_point = np.median(point_in_all_frames, axis=0)
-    selected_point_in_cmp_frame = points_in_frames[self.compare_frame]
+    selected_point_in_cmp_frame = points_in_frames[self.compare_frame]\
                                                   [selected_point_index]
 
 

@@ -88,24 +88,15 @@ def transform_pixel_to_any_frame(point, transformation, intrinsic_matrix):
   '''
 
   translation_vector, rotation_quaternions = transformation
-
   axis_angles = tf.transformations.euler_from_quaternion(rotation_quaternions)
   rotation_matrix = euler_angles_to_rotationMatrix(axis_angles)
   rotation_matrix2 = tf.transformations.quaternion_matrix(rotation_quaternions) 
   rotation_matrix = rotation_matrix[:3, :3]
   translation_vector = np.array(translation_vector) * 1000
   translation_vector = translation_vector.reshape(3,1)
-  # TODO: Move this intrinsic matrix to a config file after deciding a location
-  # for config files.
-  # intrinsic_matrix = np.array([[1518.3315230088997, 0.0, 633.3583896757208],
-  #                             [0.0, 1517.6029896637713, 519.0442053995603], 
-  #                             [0.0, 0.0, 1.0]])
   pt_in_foot_print = imgPointToWorldCoord(point, rotation_matrix, translation_vector,
                                           intrinsic_matrix, 0)
   x, y , z = pt_in_foot_print
-  #y = [y[index] for index in np.argsort(x)]
-  #z = [z[index] for index in np.argsort(x)]
-  #x = list(sorted(x))
   points_3d = np.array(map(list, zip(x,y,z)))
   # Reason: measurement in calibration process is fully done in mm but the 
   # result is needed in meters.
