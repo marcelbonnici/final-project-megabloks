@@ -26,7 +26,7 @@ from geometry_msgs.msg import Pose2D
 from blocks.srv import GetBlockPosition
 
 from blocks import pixel_frame_transform
-from blocks.pixel_frame_transform import *
+from pixel_frame_transform import *
 
 class BlockLocaliser:
   '''
