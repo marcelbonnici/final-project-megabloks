@@ -7,7 +7,7 @@
 - Senthil Palanisamy
 
 ### Click to Watch on YouTube
-[![The Baxter Builder](https://i.ytimg.com/vi/NqF3U9wo0sk/maxresdefault.jpg)](https://youtu.be/NqF3U9wo0sk "Baxter")
+[![The Baxter Builder](./images/smiley.png )](https://youtu.be/NqF3U9wo0sk "Baxter")
 
 ## 1. Project Overview:
 For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided by the user. The flow is:
