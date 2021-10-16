@@ -8,7 +8,7 @@
 
 ### Video Demonstration
 [Click Here to Watch](https://youtu.be/mz1FwBR94og)
-[![The Baxter Builder](https://i.ytimg.com/vi/mz1FwBR94og/maxresdefault.jpg)](https://youtu.be/mz1FwBR94og "Baxter")
+[![The Baxter Builder](https://public.boxcloud.com/api/2.0/internal_files/574618896892/versions/609277515292/representations/jpg_paged_2048x2048/content/1.jpg?access_token=1!KvffQq8d-e7ZkZfulwTICFsV8Wn7O0wys_lvjzU3X6LNXvrKtogCAKTxwF0rk6RHgmYwADOKKqaPIUCOt23dEAvieo40OOXtfKFfqW8PRUuFuSDNmq7E9p3KwKcP83jywk2U06qwagKn7QOoSzowroYUlmLiTIRjOxhd0gapT4emxeMrDN-hPBsf73LF7ibTh9OrxwDkg0f8xwp_W3a2f91QQugA-NbF6jkys-80ei_WWoABYYfDUvzlDjNXIncG9uT1B8QG0jCYjr8KGLU2MkYowy6sYcGTI0pTu7V296a0o-CfefkBB7as6KPhWWkq2tBZ59BJFxK2fYD_2XrXDPb9MgZwqvZCEbk-wJia7pfV-dtWxEHzEouEw-qWBKOrXY-PQjWIhRIL_gzFqQpDXLk71_GLFx_Cy0A7v0maf6118cPSivVOJSlkZxQ1MbNIM8oln6dl0nduQoP79bvNUO1wZoWBegM1VwckmIeWjTCnmuORpMlELB7gKImdNJNpPVh81FNVVeKP2HMkOSzWtkB1Iui-duNqdN_tsl2k9txmfSUBTXOGo7_4uPMzmg3SAA..&shared_link=https%3A%2F%2Fnorthwestern.app.box.com%2Fs%2Fuiuzp0e9qgijy7erlp6sjc8hpcyl0yf4&box_client_name=box-content-preview&box_client_version=2.80.0)](https://youtu.be/mz1FwBR94og "Baxter")
 
 ## 1. Project Overview:
 For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided by the user. The flow is:
