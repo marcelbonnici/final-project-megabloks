@@ -6,7 +6,8 @@
 - Marcel Bonnici
 - Senthil Palanisamy
 
-### Click to Watch on YouTube
+### Video Demonstration
+[Click Here to Watch](https://youtu.be/mz1FwBR94og)
 [![The Baxter Builder](https://i.ytimg.com/vi/mz1FwBR94og/maxresdefault.jpg)](https://youtu.be/mz1FwBR94og "Baxter")
 
 ## 1. Project Overview:
