@@ -8,7 +8,7 @@
 
 ### Video Demonstration
 [Click Here to Watch](https://youtu.be/mz1FwBR94og)
-[![The Baxter Builder](https://doc-0g-38-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/n1nrji7n3uirj9esmjl1inqlsfnq80uc/1635612450000/01215135009128180116/*/1QasSA2tJCxuFJEG5itdm8IkapoSIMffn)](https://youtu.be/mz1FwBR94og "Baxter")
+[![The Baxter Builder](https://drive.google.com/uc?id=1QasSA2tJCxuFJEG5itdm8IkapoSIMffn)](https://youtu.be/mz1FwBR94og "Baxter")
 
 ## 1. Project Overview:
 For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided by the user. The flow is:
