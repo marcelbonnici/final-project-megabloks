@@ -3,6 +3,7 @@
 
 ### Video Demonstration
 [Click Here to Watch](https://youtu.be/mz1FwBR94og)
+
 [![The Baxter Builder](images/243411533_orig.jpg)](https://youtu.be/mz1FwBR94og "Baxter")
 
 ## 1. Project Overview:
