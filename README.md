@@ -1,14 +1,9 @@
 # ME 495: Embedded Systems (Fall 2019)
 # Final Project - MEGA BLOKS
-## Group Members:
-- Allie Pinosky
-- Luxi Huang
-- Marcel Bonnici
-- Senthil Palanisamy
 
 ### Video Demonstration
 [Click Here to Watch](https://youtu.be/mz1FwBR94og)
-[![The Baxter Builder](https://i.ytimg.com/vi/mz1FwBR94og/maxresdefault.jpg)](https://youtu.be/mz1FwBR94og "Baxter")
+[![The Baxter Builder](images/243411533_orig.jpg)](https://youtu.be/mz1FwBR94og "Baxter")
 
 ## 1. Project Overview:
 For this project, Baxter assembles a MEGA BLOKS pyramid from the blocks provided by the user. The flow is:
